@@ -3,14 +3,12 @@ import {
     createBrowserRouter,
     Navigate,
     Outlet,
-    useLocation,
     useNavigate
 } from "react-router-dom";
 
 import Header from "~component/sidepanel/Header";
 import { PanelRouterPath } from "~libs/constants";
-import { OpenPanelType } from "~libs/open-ai/open-panel";
-import { GoogleAnalyticsContext } from "~provider/GoogleAnalyticsProvider";
+import { OpenPanelType } from "~libs/open-panel";
 import { SidePanelContext } from "~provider/sidepanel/SidePanelProvider";
 import Conversation from "~sidepanel/pages/conversation";
 import SidePanelIndex from "~sidepanel/pages/search";
@@ -39,13 +37,7 @@ const DetermineRedirect = () => {
 
 const Container = function () {
     const { setNavigation } = useContext(SidePanelContext);
-    const { analytics } = useContext(GoogleAnalyticsContext);
     const navigate = useNavigate();
-    const location = useLocation();
-
-    useEffect(() => {
-        void analytics.current.firePageViewEvent("", location.pathname);
-    }, [location]);
 
     useEffect(() => {
         setNavigation(() => {

@@ -12,11 +12,7 @@ import type { NavigateFunction } from "react-router-dom";
 import { Storage } from "@plasmohq/storage";
 
 import { PanelRouterPath } from "~libs/constants";
-import {
-    IAskAi,
-    OpenPanelType,
-    type IOpenPanelData
-} from "~libs/open-ai/open-panel";
+import { IAskAi, OpenPanelType, type IOpenPanelData } from "~libs/open-panel";
 import {
     DEVV_SEARCH_KEY,
     getLatestState,

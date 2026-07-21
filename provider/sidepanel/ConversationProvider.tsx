@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 
 import eventBus from "~libs/EventBus";
-import type { IAskAi } from "~libs/open-ai/open-panel";
+import type { IAskAi } from "~libs/open-panel";
 import {
     ModelManagementContext,
     type Ms

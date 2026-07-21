@@ -1,24 +1,11 @@
-import React, { useRef } from "react";
+import React from "react";
 
-import { Analytics } from "~libs/ga";
+export const GoogleAnalyticsContext = React.createContext({});
 
-interface IGoogleAnalyticsProviderProps {
-    analytics: React.MutableRefObject<Analytics>;
-}
-
-export const GoogleAnalyticsContext = React.createContext(
-    {} as IGoogleAnalyticsProviderProps
-);
-
-export default function GoogleAnalyticsProvider({ children }) {
-    const analytics = useRef(new Analytics());
-
-    return (
-        <GoogleAnalyticsContext.Provider
-            value={{
-                analytics
-            }}>
-            {children}
-        </GoogleAnalyticsContext.Provider>
-    );
+export default function GoogleAnalyticsProvider({
+    children
+}: {
+    children: React.ReactNode;
+}) {
+    return <>{children}</>;
 }

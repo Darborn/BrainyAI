@@ -12,7 +12,7 @@ import GuideText from "data-base64:~assets/greeting/guide_text.png";
 import lottie from "lottie-web";
 import { useEffect, useRef, useState } from "react";
 
-import { justOpenPanel } from "~libs/open-ai/open-panel";
+import { justOpenPanel } from "~libs/open-panel";
 import CommonShortcutProvider from "~provider/CommonShortcutProvider";
 import { getLatestState } from "~utils";
 

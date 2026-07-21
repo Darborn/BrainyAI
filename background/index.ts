@@ -1,4 +1,3 @@
-import Analytics from "~libs/ga";
 import {
     MESSAGE_ACTION_OPEN_PANEL,
     MESSAGE_ACTION_SET_PANEL_OPEN_OR_NOT,
@@ -47,7 +46,6 @@ updateCurrentWindowId();
 
 addEventListener("unhandledrejection", async (event) => {
     Logger.trace("unhandledrejection", event.reason);
-    void Analytics.fireErrorEvent(event.reason);
 });
 
 chrome.windows.onFocusChanged.addListener((windowId) => {
@@ -95,7 +93,6 @@ const openGuidePageAfterInstall = function () {
 };
 
 chrome.runtime.onInstalled.addListener(async () => {
-    void Analytics.fireEvent("install");
     void injectContentScript();
     openGuidePageAfterInstall();
 });

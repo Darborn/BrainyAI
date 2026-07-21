@@ -22,7 +22,7 @@ import {
     IAskAi,
     openPanelAskAi,
     openPanelSearchInContent
-} from "~libs/open-ai/open-panel";
+} from "~libs/open-panel";
 import { getIconSrc } from "~options/component/AiEnginePage";
 import { getImageSrc } from "~options/component/Card";
 import { SearchBar } from "~options/component/SearchBar";

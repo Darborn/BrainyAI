@@ -4,6 +4,7 @@ import Icon from "data-base64:~assets/icon.png";
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
+import ApiKeySettings from "~options/component/ApiKeySettings";
 import { PATH_SETTING_SHORTCUT } from "~options/router";
 
 export default function Layout() {
@@ -77,6 +78,7 @@ export default function Layout() {
             </div>
             <div className={"flex-1"}>
                 <Outlet />
+                <ApiKeySettings />
             </div>
         </div>
     );

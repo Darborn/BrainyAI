@@ -21,11 +21,8 @@ import React, {
     useState
 } from "react";
 
-import {
-    ConversationResponse,
-    ResponseMessageType
-} from "~libs/open-ai/open-ai-interface";
-import { IAskAi, openPanelSearchInContent } from "~libs/open-ai/open-panel";
+import { ConversationResponse, ResponseMessageType } from "~libs/chatbot/IBot";
+import { IAskAi, openPanelSearchInContent } from "~libs/open-panel";
 import {
     ConversationContext,
     ConversationMessage,
@@ -327,23 +324,11 @@ const AIError = memo(function ({
     }, []);
 
     const openLogin = async function () {
-        const r = await new model({
-            globalConversationId: conversationId
-        }).startAuth();
-
-        if (r) {
-            void clickRefresh();
-        }
+        // API mode — no website login needed
     };
 
     const openCaptcha = async function () {
-        const r = await new model({
-            globalConversationId: conversationId
-        }).startCaptcha();
-
-        if (r) {
-            void clickRefresh();
-        }
+        // API mode — no captcha needed
     };
 
     const clickRefresh = async () => {
