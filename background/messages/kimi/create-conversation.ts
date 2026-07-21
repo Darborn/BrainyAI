@@ -38,7 +38,7 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     try {
         const result = await r.response?.json();
         res.send([null, result]);
-    } catch (e) {
+    } catch (_e) {
         res.send([new ChatError(ErrorCode.UNKNOWN_ERROR), null]);
     }
 };

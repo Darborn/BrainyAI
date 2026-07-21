@@ -102,10 +102,11 @@ export default class ArkoseGlobalSingleton {
                     Logger.log("Could not load the Arkose API Script!");
                 };
             } else {
-                this.requirementsData &&
+                if (this.requirementsData) {
                     this.myEnforcement.setConfig({
                         data: { blob: this.requirementsData.arkose.dx }
                     });
+                }
                 this.loadScriptPromise.resolve(true);
                 this.loadScriptPromise = undefined;
             }

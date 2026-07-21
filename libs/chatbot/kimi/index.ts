@@ -253,7 +253,7 @@ export class KimiBot extends BotBase implements IBot {
                 links,
                 tags
             };
-        } catch (e) {
+        } catch (_e) {
             return {
                 links,
                 tags

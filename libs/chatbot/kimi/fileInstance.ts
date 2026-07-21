@@ -213,7 +213,7 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
                             }
 
                             resolve([null]);
-                        } catch (e) {
+                        } catch (_e) {
                             resolve([new ChatError(ErrorCode.UNKNOWN_ERROR)]);
                         }
                     }
@@ -297,7 +297,7 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         try {
             const result = await request?.response?.json();
             return [null, result];
-        } catch (e) {
+        } catch (_e) {
             return [new ChatError(ErrorCode.UNKNOWN_ERROR), null];
         }
     }
