@@ -33,7 +33,7 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
 
         const result = await response.json();
         res.send(result);
-    } catch (_e) {
+    } catch (_) {
         res.send(null);
     }
 };

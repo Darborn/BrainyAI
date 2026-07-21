@@ -85,7 +85,7 @@ const runConversation = async function (): Promise<[ChatError | null, any]> {
 
     try {
         return [null, JSON.parse(await r.response!.text())];
-    } catch (_e) {
+    } catch (_) {
         return [new ChatError(ErrorCode.UNKNOWN_ERROR), null];
     }
 };

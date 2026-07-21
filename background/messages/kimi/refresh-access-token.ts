@@ -41,7 +41,7 @@ export const kimiRefreshAccessToken = async (): Promise<
             return [null, result];
         }
         return [new ChatError(ErrorCode.UNAUTHORIZED), null];
-    } catch (_e) {
+    } catch (_) {
         return [new ChatError(ErrorCode.UNKNOWN_ERROR), null];
     }
 };

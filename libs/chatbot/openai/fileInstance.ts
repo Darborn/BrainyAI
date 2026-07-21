@@ -190,7 +190,7 @@ export class OpenAiFileSingleton implements BotFileInstance<OpenAiFileRef> {
                         null
                     ];
                 }
-            } catch (e) {
+            } catch (_) {
                 // ignore
             }
             return [request.error, null];
