@@ -1,4 +1,4 @@
-import {Logger} from "~utils/logger";
+import { Logger } from "~utils/logger";
 
 function getMimeType(extension) {
     const ext = extension.split(".").pop()?.toLowerCase();
@@ -27,23 +27,27 @@ function getMimeType(extension) {
 // }
 
 function determineMimeType(e, t, n, r, o) {
-    Logger.trace(e,t,n,r,o);
-    if (null == o)
-        return e;
+    Logger.trace(e, t, n, r, o);
+    if (null == o) return e;
     const i = getMimeType(t);
-    i && (n = i),
-    r && (n = function(e) {
-        switch (e) {
-        case "application/vnd.google-apps.spreadsheet":
-            return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        case "application/vnd.google-apps.document":
-            return "text/plain";
-        default:
-            return e;
-        }
-    }(n));
-    const {accepted_mime_types: l, can_accept_all_mime_types: a} = o;
-    return null != l && 0 !== l.length && a ? l.includes(n) ? e : AJ.Interpreter : e;
+    (i && (n = i),
+        r &&
+            (n = (function (e) {
+                switch (e) {
+                    case "application/vnd.google-apps.spreadsheet":
+                        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    case "application/vnd.google-apps.document":
+                        return "text/plain";
+                    default:
+                        return e;
+                }
+            })(n)));
+    const { accepted_mime_types: l, can_accept_all_mime_types: a } = o;
+    return null != l && 0 !== l.length && a
+        ? l.includes(n)
+            ? e
+            : AJ.Interpreter
+        : e;
 }
 
 // function translateMimeType(mimeType) {
@@ -73,12 +77,12 @@ const AJ = {
     "3": "Retrieval",
     "4": "ContextConnector",
     "5": "ProfilePicture",
-    "None": 0,
-    "Multimodal": 1,
-    "Interpreter": 2,
-    "Retrieval": 3,
-    "ContextConnector": 4,
-    "ProfilePicture": 5
+    None: 0,
+    Multimodal: 1,
+    Interpreter: 2,
+    Retrieval: 3,
+    ContextConnector: 4,
+    ProfilePicture: 5
 };
 
 const OL = {
@@ -96,7 +100,7 @@ const Cd = {
 };
 
 function getProductFeatures(e, t) {
-    if ((t?.kind) === OL.GizmoInteraction || (t?.kind) === OL.GizmoTest) {
+    if (t?.kind === OL.GizmoInteraction || t?.kind === OL.GizmoTest) {
         return t.gizmo?.product_features;
     }
     return e?.product_features;
@@ -188,32 +192,42 @@ const EP = {
 
 const imageMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-export  function getUseCaseType(
+export function getUseCaseType(
     file,
     options: any = {},
     contextConnector?: any
 ) {
-    const attachmentType = determineAttachmentType(EP, { kind: "primary_assistant" });
+    const attachmentType = determineAttachmentType(EP, {
+        kind: "primary_assistant"
+    });
     const { gizmoId } = options as any;
-    const mimeType = determineMimeType(attachmentType, file.name, file.type, contextConnector, EP.product_features.attachments);
+    const mimeType = determineMimeType(
+        attachmentType,
+        file.name,
+        file.type,
+        contextConnector,
+        EP.product_features.attachments
+    );
     let useCaseType;
     if (imageMimeTypes.includes(file.type)) {
         useCaseType = USE_CASE.Multimodal;
     } else {
         switch (mimeType) {
-        case AJ.Multimodal:
-            throw new Error(`Multimodal file upload not supported mime type, ${file.type}\nSupported mime types: ${imageMimeTypes.join(", ")}`);
-        case AJ.Interpreter:
-            useCaseType = USE_CASE.AceUpload;
-            break;
-        case AJ.Retrieval:
-            useCaseType = USE_CASE.MyFiles;
-            break;
-        case AJ.ProfilePicture:
-            throw new Error("cannot upload profile picture via uploadFile");
-        case AJ.ContextConnector:
-        case AJ.None:
-            return;
+            case AJ.Multimodal:
+                throw new Error(
+                    `Multimodal file upload not supported mime type, ${file.type}\nSupported mime types: ${imageMimeTypes.join(", ")}`
+                );
+            case AJ.Interpreter:
+                useCaseType = USE_CASE.AceUpload;
+                break;
+            case AJ.Retrieval:
+                useCaseType = USE_CASE.MyFiles;
+                break;
+            case AJ.ProfilePicture:
+                throw new Error("cannot upload profile picture via uploadFile");
+            case AJ.ContextConnector:
+            case AJ.None:
+                return;
         }
     }
 

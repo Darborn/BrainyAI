@@ -1,16 +1,25 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
+
+import { sendToBackground } from "@plasmohq/messaging";
+import { Storage } from "@plasmohq/storage";
+
+import XFrameDialog from "~component/xframe/dialog";
+import {
+    getSearchSiteByName,
+    SiteName
+} from "~provider/sidepanel/SidePanelProvider";
 import {
     appendParamToUrl,
     IS_OPEN_IN_CHALLENGE_WINDOW,
     openInPlugin,
     WINDOW_FOR_REMOVE_STORAGE_KEY
 } from "~utils";
-import {sendToBackground} from "@plasmohq/messaging";
-import {getSearchSiteByName, SiteName} from "~provider/sidepanel/SidePanelProvider";
-import { Storage } from "@plasmohq/storage";
-import XFrameDialog from "~component/xframe/dialog";
 
-export default function CInPanelChallenge({siteName}: {siteName: SiteName}) {
+export default function CInPanelChallenge({
+    siteName
+}: {
+    siteName: SiteName;
+}) {
     const [shouldShowDialog, setShouldShowDialog] = useState(false);
 
     const checkInCloudflareChallenge = function () {
@@ -22,18 +31,26 @@ export default function CInPanelChallenge({siteName}: {siteName: SiteName}) {
     };
 
     const openNewWindow = async function () {
-        const randomKey = '__window_key_' + Math.random() * 1000;
+        const randomKey = "__window_key_" + Math.random() * 1000;
 
         const res = await sendToBackground({
             name: "open-new-window",
             body: {
-                url: appendParamToUrl(appendParamToUrl(getSearchSiteByName(siteName).mainSite, IS_OPEN_IN_CHALLENGE_WINDOW, '1'), WINDOW_FOR_REMOVE_STORAGE_KEY, randomKey),
+                url: appendParamToUrl(
+                    appendParamToUrl(
+                        getSearchSiteByName(siteName).mainSite,
+                        IS_OPEN_IN_CHALLENGE_WINDOW,
+                        "1"
+                    ),
+                    WINDOW_FOR_REMOVE_STORAGE_KEY,
+                    randomKey
+                ),
                 width: 400,
                 height: 660,
                 focused: true,
                 screenWidth: window.screen.width,
                 screenHeight: window.screen.height
-            },
+            }
         });
 
         const storage = new Storage();
@@ -50,9 +67,14 @@ export default function CInPanelChallenge({siteName}: {siteName: SiteName}) {
         }
     }, []);
 
-    return <div>
-        {
-            shouldShowDialog ? <XFrameDialog siteName={siteName} onStartClick={openNewWindow}/>: null
-        }
-    </div>;
+    return (
+        <div>
+            {shouldShowDialog ? (
+                <XFrameDialog
+                    siteName={siteName}
+                    onStartClick={openNewWindow}
+                />
+            ) : null}
+        </div>
+    );
 }

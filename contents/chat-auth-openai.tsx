@@ -1,16 +1,20 @@
-import type {PlasmoCSConfig} from "plasmo";
+import type { PlasmoCSConfig } from "plasmo";
+import { useEffect } from "react";
+
+import { sendToBackground } from "@plasmohq/messaging";
+import { Storage } from "@plasmohq/storage";
+
+import { OpenaiBot } from "~libs/chatbot/openai";
 import {
-    MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS, WINDOW_FOR_REMOVE_STORAGE_KEY,
+    MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS,
+    WINDOW_FOR_REMOVE_STORAGE_KEY
 } from "~utils";
-import {Logger} from "~utils/logger";
-import {OpenaiBot} from "~libs/chatbot/openai";
-import {useEffect} from "react";
-import {sendToBackground} from "@plasmohq/messaging";
-import {Storage} from "@plasmohq/storage";
+import { Logger } from "~utils/logger";
+
 export const config: PlasmoCSConfig = {
-    matches: ['https://chatgpt.com/*', "https://chat.openai.com/*"],
+    matches: ["https://chatgpt.com/*", "https://chat.openai.com/*"],
     all_frames: true,
-    run_at: 'document_end'
+    run_at: "document_end"
 };
 
 const THE_AUTH_KEY = "___openaiAuthKey";
@@ -21,20 +25,23 @@ export default function OpenaiStandaloneAuthWindow() {
         let interval: NodeJS.Timeout;
 
         void setKeys().then(() => {
-            Logger.trace('ooo openaiAuthKey');
-            const {openaiAuthKey, windowId} = getKeys();
-            Logger.trace('ooo openaiAuthKey 1', openaiAuthKey);
-            Logger.trace('ooo windowId 1', windowId);
-            Logger.trace('ooo sessionStorage.getItem(THE_AUTH_KEY)', sessionStorage.getItem(THE_AUTH_KEY));
+            Logger.trace("ooo openaiAuthKey");
+            const { openaiAuthKey, windowId } = getKeys();
+            Logger.trace("ooo openaiAuthKey 1", openaiAuthKey);
+            Logger.trace("ooo windowId 1", windowId);
+            Logger.trace(
+                "ooo sessionStorage.getItem(THE_AUTH_KEY)",
+                sessionStorage.getItem(THE_AUTH_KEY)
+            );
             if (openaiAuthKey && windowId) {
                 interval = setInterval(() => {
                     if (targetSourceValidator()) {
                         clearInterval(interval);
-                        Logger.trace('ooo remove key');
+                        Logger.trace("ooo remove key");
                         resetKeys();
 
-                        Logger.trace('ooo openaiAuthKey', openaiAuthKey);
-                        Logger.trace('ooo windowId', windowId);
+                        Logger.trace("ooo openaiAuthKey", openaiAuthKey);
+                        Logger.trace("ooo windowId", windowId);
 
                         void chrome.runtime.sendMessage(chrome.runtime.id, {
                             action: MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS,
@@ -42,12 +49,12 @@ export default function OpenaiStandaloneAuthWindow() {
                         });
 
                         if (windowId) {
-                            Logger.trace('ooo sendToBackground');
+                            Logger.trace("ooo sendToBackground");
                             void sendToBackground({
                                 name: "close-window",
                                 body: {
                                     windowId
-                                },
+                                }
                             });
                         }
                     }
@@ -60,20 +67,24 @@ export default function OpenaiStandaloneAuthWindow() {
         };
     }, []);
 
-
     const resetKeys = function () {
         void sessionStorage.removeItem(THE_AUTH_KEY);
         void sessionStorage.removeItem(THE_WINDOW_ID);
     };
 
     const setKeys = async function () {
-        const openaiAuthKey = new URLSearchParams(location.search).get(OpenaiBot.AUTH_WINDOW_KEY);
-        const windowKey: string = new URLSearchParams(location.search).get(WINDOW_FOR_REMOVE_STORAGE_KEY) ?? '';
+        const openaiAuthKey = new URLSearchParams(location.search).get(
+            OpenaiBot.AUTH_WINDOW_KEY
+        );
+        const windowKey: string =
+            new URLSearchParams(location.search).get(
+                WINDOW_FOR_REMOVE_STORAGE_KEY
+            ) ?? "";
 
         const pStorage = new Storage();
         const windowId = await pStorage.get(windowKey);
 
-        Logger.trace('ooo setKeys', openaiAuthKey, windowId);
+        Logger.trace("ooo setKeys", openaiAuthKey, windowId);
 
         if (openaiAuthKey && windowId) {
             void sessionStorage.setItem(THE_AUTH_KEY, openaiAuthKey);
@@ -91,17 +102,16 @@ export default function OpenaiStandaloneAuthWindow() {
     const targetSourceValidator = function () {
         let authed = false;
 
-        const t = document.querySelectorAll('.rounded-sm');
+        const t = document.querySelectorAll(".rounded-sm");
 
         for (const tElement of t) {
             if (tElement.getAttribute("alt")?.toLowerCase() === "user") {
-                return authed = true;
+                return (authed = true);
             }
         }
 
         return authed;
     };
 
-    return <div id={'boa'}>
-    </div>;
+    return <div id={"boa"}></div>;
 }

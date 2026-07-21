@@ -1,17 +1,17 @@
 export enum ErrorCode {
-    CONVERSATION_LIMIT = 'CONVERSATION_LIMIT',
-    UNKNOWN_ERROR = 'UNKNOWN_ERROR',
-    CAPTCHA = 'CAPTCHA',
-    COPILOT_DISENGAGED = 'COPILOT_DISENGAGED',
-    COPILOT_WEBSOCKET_ERROR = 'COPILOT_WEBSOCKET_ERROR',
-    COPILOT_INVALID_REQUEST = 'COPILOT_INVALID_REQUEST',
-    NETWORK_ERROR = 'NETWORK_ERROR',
-    UNAUTHORIZED = 'UNAUTHORIZED',
-    REQUEST_TIMEOUT_ABORT = 'REQUEST_TIMEOUT_ABORT',
-    MODEL_INTERNAL_ERROR = 'MODEL_INTERNAL_ERROR',
-    UPLOAD_FILE_NOT_SUPPORTED = 'UPLOAD_FILE_NOT_SUPPORTED',
-    FILE_OTHER = 'FILE_OTHER',
-    MODEL_NO_PERMISSION = 'MODEL_NO_PERMISSION',
+    CONVERSATION_LIMIT = "CONVERSATION_LIMIT",
+    UNKNOWN_ERROR = "UNKNOWN_ERROR",
+    CAPTCHA = "CAPTCHA",
+    COPILOT_DISENGAGED = "COPILOT_DISENGAGED",
+    COPILOT_WEBSOCKET_ERROR = "COPILOT_WEBSOCKET_ERROR",
+    COPILOT_INVALID_REQUEST = "COPILOT_INVALID_REQUEST",
+    NETWORK_ERROR = "NETWORK_ERROR",
+    UNAUTHORIZED = "UNAUTHORIZED",
+    REQUEST_TIMEOUT_ABORT = "REQUEST_TIMEOUT_ABORT",
+    MODEL_INTERNAL_ERROR = "MODEL_INTERNAL_ERROR",
+    UPLOAD_FILE_NOT_SUPPORTED = "UPLOAD_FILE_NOT_SUPPORTED",
+    FILE_OTHER = "FILE_OTHER",
+    MODEL_NO_PERMISSION = "MODEL_NO_PERMISSION"
     // CHATGPT_AUTH = 'CHATGPT_AUTH',
     // GPT4_MODEL_WAITLIST = 'GPT4_MODEL_WAITLIST',
     // COPILOT_UNAUTHORIZED = 'BING_UNAUTHORIZED',
@@ -49,12 +49,12 @@ export class ChatError {
 
 export function getErrorMessage(errorCode: ErrorCode) {
     switch (errorCode) {
-    case ErrorCode.CONVERSATION_LIMIT:
-        return 'Sorry, the conversation limit has been reached. Please try later.';
-    case ErrorCode.UNKNOWN_ERROR:
-        return 'Sorry, something went wrong. Please restart the session.';
-    case ErrorCode.CAPTCHA:
-        return 'Please pass the Cloudflare check.';
+        case ErrorCode.CONVERSATION_LIMIT:
+            return "Sorry, the conversation limit has been reached. Please try later.";
+        case ErrorCode.UNKNOWN_ERROR:
+            return "Sorry, something went wrong. Please restart the session.";
+        case ErrorCode.CAPTCHA:
+            return "Please pass the Cloudflare check.";
         // case ErrorCode.CHATGPT_UNAUTHORIZED:
         //     return 'There is no logged-in ChatGPT account in this browser.'
         // case ErrorCode.CHATGPT_AUTH:
@@ -65,8 +65,8 @@ export function getErrorMessage(errorCode: ErrorCode) {
         //     return 'Unauthorized access to Copilot.'
         // case ErrorCode.CAPTCHA:
         //     return 'Please solve the Captcha to access Copilot.'
-    case ErrorCode.COPILOT_INVALID_REQUEST:
-        return 'Please restart the Copilot session.';
+        case ErrorCode.COPILOT_INVALID_REQUEST:
+            return "Please restart the Copilot session.";
         // case ErrorCode.API_KEY_NOT_SET:
         //     return 'API key not set.'
         // case ErrorCode.BARD_EMPTY_RESPONSE:
@@ -81,8 +81,8 @@ export function getErrorMessage(errorCode: ErrorCode) {
         //     return 'Missing permission to host.'
         // case ErrorCode.XUNFEI_UNAUTHORIZED:
         //     return 'Unauthorized access to Xunfei.'
-    case ErrorCode.NETWORK_ERROR:
-        return 'Network error.';
+        case ErrorCode.NETWORK_ERROR:
+            return "Network error.";
         // case ErrorCode.POE_MESSAGE_LIMIT:
         //     return 'Poe message limit reached.'
         // case ErrorCode.LMSYS_SESSION_EXPIRED:
@@ -107,11 +107,11 @@ export function getErrorMessage(errorCode: ErrorCode) {
         //     return 'Grok is unavailable.'
         // case ErrorCode.CUSTOM_ERROR:
         //     return message ?? 'Unknown error.'
-    case ErrorCode.REQUEST_TIMEOUT_ABORT:
-        return 'Request timeout, aborted.';
-    case ErrorCode.MODEL_INTERNAL_ERROR:
-        return 'Some went wrong, please try again.';
-    default:
-        return 'Unknown error.';
+        case ErrorCode.REQUEST_TIMEOUT_ABORT:
+            return "Request timeout, aborted.";
+        case ErrorCode.MODEL_INTERNAL_ERROR:
+            return "Some went wrong, please try again.";
+        default:
+            return "Unknown error.";
     }
 }

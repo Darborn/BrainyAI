@@ -14,10 +14,7 @@
         },
         "condition": {
             "urlFilter": "|*--in-mobile",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame"
-            ]
+            "resourceTypes": ["main_frame", "sub_frame"]
         }
     },
     {
@@ -38,10 +35,7 @@
         },
         "condition": {
             "urlFilter": "|*--r-csp",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame"
-            ]
+            "resourceTypes": ["main_frame", "sub_frame"]
         }
     },
     {
@@ -59,11 +53,7 @@
         },
         "condition": {
             "urlFilter": "|wss://sydney.bing.com*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "websocket"
-            ]
+            "resourceTypes": ["main_frame", "sub_frame", "websocket"]
         }
     },
     {
@@ -81,10 +71,7 @@
         },
         "condition": {
             "urlFilter": "|*--pif=1",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame"
-            ]
+            "resourceTypes": ["main_frame", "sub_frame"]
         }
     },
     {
@@ -107,11 +94,7 @@
         },
         "condition": {
             "urlFilter": "https://kimi.moonshot.cn/api*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ]
+            "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest"]
         }
     },
     {
@@ -134,9 +117,7 @@
         },
         "condition": {
             "urlFilter": "https://chatgpt.com/*",
-            "resourceTypes": [
-                "xmlhttprequest"
-            ]
+            "resourceTypes": ["xmlhttprequest"]
         }
     },
     {
@@ -154,11 +135,7 @@
         },
         "condition": {
             "urlFilter": "wss://www.perplexity.ai/socket.io/?EIO=4*",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "websocket"
-            ]
+            "resourceTypes": ["main_frame", "sub_frame", "websocket"]
         }
     },
     {
@@ -181,11 +158,7 @@
         },
         "condition": {
             "urlFilter": "|*--cua=1",
-            "resourceTypes": [
-                "main_frame",
-                "sub_frame",
-                "xmlhttprequest"
-            ]
+            "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest"]
         }
     }
 ]

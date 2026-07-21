@@ -1,10 +1,10 @@
-import type {PlasmoCSConfig} from "plasmo";
-import {useEffect} from "react";
-import {DEVV_SEARCH_KEY, openInPlugin} from "~utils";
+import type { PlasmoCSConfig } from "plasmo";
+import { useEffect } from "react";
 
+import { DEVV_SEARCH_KEY, openInPlugin } from "~utils";
 
 export const config: PlasmoCSConfig = {
-    matches: ['https://devv.ai/*'],
+    matches: ["https://devv.ai/*"],
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     exclude_globs: ["https://devv.ai/search*"],
@@ -13,17 +13,17 @@ export const config: PlasmoCSConfig = {
 };
 
 export default function Devv() {
-
     function insertText() {
         const searchText = getSearchText();
 
         if (searchText) {
             const findTextAreaInterval = setInterval(function () {
-                const els = document.querySelectorAll('textarea');
+                const els = document.querySelectorAll("textarea");
                 let t: HTMLTextAreaElement | null = null;
 
-                if(!els.length) { return; }
-
+                if (!els.length) {
+                    return;
+                }
 
                 clearInterval(findTextAreaInterval);
 
@@ -31,16 +31,20 @@ export default function Devv() {
 
                 setTimeout(function () {
                     t?.focus();
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-expect-error
-                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+                    const descriptor = Object.getOwnPropertyDescriptor(
+                        window.HTMLTextAreaElement.prototype,
+                        "value"
+                    );
+                    const nativeInputValueSetter = descriptor!.set;
                     nativeInputValueSetter?.call(t, searchText);
 
-                    const event = new Event('input', {bubbles: true});
+                    const event = new Event("input", { bubbles: true });
                     t?.dispatchEvent(event);
 
                     setTimeout(function () {
-                        const searchButton = document.querySelectorAll("button[aria-label='Search']")[0] as HTMLButtonElement;
+                        const searchButton = document.querySelectorAll(
+                            "button[aria-label='Search']"
+                        )[0] as HTMLButtonElement;
                         if (searchButton) {
                             searchButton.click();
                         }
@@ -62,7 +66,5 @@ export default function Devv() {
         }
     }, []);
 
-    return <div>
-
-    </div>;
+    return <div></div>;
 }

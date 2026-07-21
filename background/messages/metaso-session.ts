@@ -1,4 +1,4 @@
-import type {PlasmoMessaging} from "@plasmohq/messaging";
+import type { PlasmoMessaging } from "@plasmohq/messaging";
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     const myHeaders = new Headers();
@@ -13,22 +13,23 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     myHeaders.append("is-mini-webview", "0");
 
     const raw = JSON.stringify({
-        "question": req.body.searchText,
-        "mode": "detail",
-        "engineType": ""
+        question: req.body.searchText,
+        mode: "detail",
+        engineType: ""
     });
 
     const requestOptions = {
         method: "POST",
         headers: myHeaders,
         body: raw,
-        redirect: "follow"
+        redirect: "follow" as const
     };
 
     try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        const response = await fetch("https://metaso.cn/api/session", requestOptions);
+        const response = await fetch(
+            "https://metaso.cn/api/session",
+            requestOptions
+        );
 
         const result = await response.json();
         res.send(result);

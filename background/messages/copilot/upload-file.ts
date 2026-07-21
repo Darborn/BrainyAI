@@ -1,8 +1,9 @@
-import type {PlasmoMessaging} from "@plasmohq/messaging";
-import { customChatFetch} from "~utils/custom-fetch-for-chat";
+import type { PlasmoMessaging } from "@plasmohq/messaging";
+
+import { customChatFetch } from "~utils/custom-fetch-for-chat";
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
-    const {conversationId, imageBase64} = req.body;
+    const { conversationId, imageBase64 } = req.body;
 
     const myHeaders = new Headers();
     myHeaders.append("origin", "https://copilot.microsoft.com");
@@ -10,18 +11,16 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
 
     const formData = new FormData();
     const rawData = {
-        "imageInfo": {},
-        "knowledgeRequest": {
-            "invokedSkills": [
-                "ImageById"
-            ],
-            "subscriptionId": "Bing.Chat.Multimodal",
-            "invokedSkillsRequestData": {
-                "enableFaceBlur": true
+        imageInfo: {},
+        knowledgeRequest: {
+            invokedSkills: ["ImageById"],
+            subscriptionId: "Bing.Chat.Multimodal",
+            invokedSkillsRequestData: {
+                enableFaceBlur: true
             },
-            "convoData": {
-                "convoid": conversationId,
-                "convotone": "Balanced"
+            convoData: {
+                convoid: conversationId,
+                convotone: "Balanced"
             }
         }
     };
@@ -29,15 +28,17 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     formData.append("knowledgeRequest", JSON.stringify(rawData));
     formData.append("imageBase64", imageBase64);
 
+    const request = await customChatFetch(
+        "https://copilot.microsoft.com/images/kblob?--cua=1",
+        {
+            method: "POST",
+            headers: myHeaders,
+            body: formData,
+            redirect: "follow"
+        }
+    );
 
-    const request = await customChatFetch("https://copilot.microsoft.com/images/kblob?--cua=1", {
-        method: "POST",
-        headers: myHeaders,
-        body: formData,
-        redirect: "follow"
-    });
-
-    if(request.error) {
+    if (request.error) {
         return res.send([request.error, null]);
     }
 

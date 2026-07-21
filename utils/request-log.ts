@@ -1,8 +1,8 @@
-import {Storage} from '@plasmohq/storage';
+import { Storage } from "@plasmohq/storage";
 
 export default class RequestLog {
     storage: Storage;
-    prefix = 'request-log';
+    prefix = "request-log";
     constructor() {
         this.storage = new Storage();
     }

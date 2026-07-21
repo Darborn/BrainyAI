@@ -1,9 +1,14 @@
-import type {CopilotConversation} from "~background/messages/copilot/init-copilot-conversation";
 import moment from "moment/moment";
-import {ConversationResponse, ResponseMessageType} from "~libs/open-ai/open-ai-interface";
-import {ChatError, ErrorCode} from "~utils/errors";
-import {CopilotImageCreateAppendix} from "~component/MessageAppendix";
-import {Logger} from "~utils/logger";
+
+import type { CopilotConversation } from "~background/messages/copilot/init-copilot-conversation";
+import { CopilotImageCreateAppendix } from "~component/MessageAppendix";
+import {
+    ConversationResponse,
+    ResponseMessageType
+} from "~libs/open-ai/open-ai-interface";
+import { ChatError, ErrorCode } from "~utils/errors";
+import { Logger } from "~utils/logger";
+
 //
 // const kSeedIncrement = 500
 //
@@ -23,25 +28,43 @@ class CoreUtils {
     }
 
     static uuid() {
-        return (this.partUUID() + this.partUUID() + "-" + this.partUUID() + "-" + this.partUUID() + "-" + this.partUUID() + "-" + this.partUUID() + this.partUUID() + this.partUUID()).toLowerCase();
+        return (
+            this.partUUID() +
+            this.partUUID() +
+            "-" +
+            this.partUUID() +
+            "-" +
+            this.partUUID() +
+            "-" +
+            this.partUUID() +
+            "-" +
+            this.partUUID() +
+            this.partUUID() +
+            this.partUUID()
+        ).toLowerCase();
     }
 
     static partUUID() {
-        return (65536 * (1 + Math.random()) | 0).toString(16).substring(1);
+        return ((65536 * (1 + Math.random())) | 0).toString(16).substring(1);
     }
 }
 
-export const initWss = function (conversation: CopilotConversation): Promise<[ChatError | null, WebSocket]> {
+export const initWss = function (
+    conversation: CopilotConversation
+): Promise<[ChatError | null, WebSocket]> {
     return new Promise((resolve) => {
-        const ws = new WebSocket("wss://sydney.bing.com/sydney/ChatHub?sec_access_token=" + encodeURIComponent(conversation.encryptedConversationSignature));
+        const ws = new WebSocket(
+            "wss://sydney.bing.com/sydney/ChatHub?sec_access_token=" +
+                encodeURIComponent(conversation.encryptedConversationSignature)
+        );
 
         ws.onopen = function () {
-            ws.send(formatSendMessage({"protocol": "json", "version": 1}));
+            ws.send(formatSendMessage({ protocol: "json", version: 1 }));
         };
 
         ws.onmessage = function (event) {
             if (event.data === formatSendMessage({})) {
-                ws.send(formatSendMessage({"type": 6}));
+                ws.send(formatSendMessage({ type: 6 }));
                 resolve([null, ws]);
             }
         };
@@ -58,20 +81,24 @@ export const initWss = function (conversation: CopilotConversation): Promise<[Ch
 };
 
 export const formatSendMessage = function (message: NonNullable<unknown>) {
-    return JSON.stringify(message) + '';
+    return JSON.stringify(message) + "";
 };
 
 const getTraceId = function () {
     return CoreUtils.uuid().replaceAll("-", "");
 };
 
-const getImageMessageParams = function (content: string, conversation: CopilotConversation, imageSource: string) {
+const getImageMessageParams = function (
+    content: string,
+    conversation: CopilotConversation,
+    imageSource: string
+) {
     const uuid = CoreUtils.uuid();
     return {
-        "arguments": [
+        arguments: [
             {
-                "source": "cib",
-                "optionsSets": [
+                source: "cib",
+                optionsSets: [
                     "nlu_direct_response_filter",
                     "deepleo",
                     "disable_emoji_spoken_text",
@@ -85,7 +112,7 @@ const getImageMessageParams = function (content: string, conversation: CopilotCo
                     "iycapbing",
                     "galileo"
                 ],
-                "allowedMessageTypes": [
+                allowedMessageTypes: [
                     "ActionRequest",
                     "Chat",
                     "ConfirmationCard",
@@ -105,69 +132,76 @@ const getImageMessageParams = function (content: string, conversation: CopilotCo
                     "InternalTasksMessage",
                     "Disclaimer"
                 ],
-                "sliceIds": [],
-                "verbosity": "verbose",
-                "scenario": "CopilotMicrosoftCom",
-                "plugins": [
+                sliceIds: [],
+                verbosity: "verbose",
+                scenario: "CopilotMicrosoftCom",
+                plugins: [
                     {
-                        "id": "c310c353-b9f0-4d76-ab0d-1dd5e979cf68",
-                        "category": 1
+                        id: "c310c353-b9f0-4d76-ab0d-1dd5e979cf68",
+                        category: 1
                     }
                 ],
-                "traceId": getTraceId(),
-                "conversationHistoryOptionsSets": [
+                traceId: getTraceId(),
+                conversationHistoryOptionsSets: [
                     "autosave",
                     "savemem",
                     "uprofupd",
                     "uprofgen"
                 ],
-                "gptId": "copilot",
-                "isStartOfSession": true,
-                "requestId": uuid,
-                "message": {
-                    "locale": "",
-                    "market": "",
-                    "region": "",
-                    "location": "",
-                    "userIpAddress": "",
-                    "timestamp": moment().format(),
-                    "imageUrl": "https://copilot.microsoft.com/images/blob?bcid=" + imageSource,
-                    "originalImageUrl": "https://copilot.microsoft.com/images/blob?bcid=" + imageSource,
-                    "adaptiveCards": [],
-                    "author": "user",
-                    "inputMethod": "Keyboard",
-                    "text": content,
-                    "messageType": "Chat",
-                    "requestId": uuid,
-                    "messageId": uuid
+                gptId: "copilot",
+                isStartOfSession: true,
+                requestId: uuid,
+                message: {
+                    locale: "",
+                    market: "",
+                    region: "",
+                    location: "",
+                    userIpAddress: "",
+                    timestamp: moment().format(),
+                    imageUrl:
+                        "https://copilot.microsoft.com/images/blob?bcid=" +
+                        imageSource,
+                    originalImageUrl:
+                        "https://copilot.microsoft.com/images/blob?bcid=" +
+                        imageSource,
+                    adaptiveCards: [],
+                    author: "user",
+                    inputMethod: "Keyboard",
+                    text: content,
+                    messageType: "Chat",
+                    requestId: uuid,
+                    messageId: uuid
                 },
-                "tone": "Balanced",
-                "extraExtensionParameters": {
+                tone: "Balanced",
+                extraExtensionParameters: {
                     "gpt-creator-persona": {
-                        "personaId": "copilot"
+                        personaId: "copilot"
                     }
                 },
-                "spokenTextMode": "None",
-                "conversationId": conversation.conversationId,
-                "participant": {
-                    "id": conversation.clientId
+                spokenTextMode: "None",
+                conversationId: conversation.conversationId,
+                participant: {
+                    id: conversation.clientId
                 }
             }
         ],
-        "invocationId": "0",
-        "target": "chat",
-        "type": 4
+        invocationId: "0",
+        target: "chat",
+        type: 4
     };
 };
 
-const getCommonTextMessageParams = function (content: string, conversation: CopilotConversation) {
+const getCommonTextMessageParams = function (
+    content: string,
+    conversation: CopilotConversation
+) {
     const uuid = CoreUtils.uuid();
 
     return {
-        "arguments": [
+        arguments: [
             {
-                "source": "cib",
-                "optionsSets": [
+                source: "cib",
+                optionsSets: [
                     "nlu_direct_response_filter",
                     "deepleo",
                     "disable_emoji_spoken_text",
@@ -185,7 +219,7 @@ const getCommonTextMessageParams = function (content: string, conversation: Copi
                     "uprv4p1upd",
                     "localreducehho"
                 ],
-                "allowedMessageTypes": [
+                allowedMessageTypes: [
                     "ActionRequest",
                     "Chat",
                     "ConfirmationCard",
@@ -205,7 +239,7 @@ const getCommonTextMessageParams = function (content: string, conversation: Copi
                     "InternalTasksMessage",
                     "Disclaimer"
                 ],
-                "sliceIds": [
+                sliceIds: [
                     "inputdestf",
                     "gldidentitycf",
                     "301hlinks0",
@@ -242,54 +276,60 @@ const getCommonTextMessageParams = function (content: string, conversation: Copi
                     "sstopnbg",
                     "styleoffss"
                 ],
-                "verbosity": "verbose",
-                "scenario": "CopilotMicrosoftCom",
-                "plugins": [],
-                "traceId": CoreUtils.uuid().replaceAll("-", ""),
-                "conversationHistoryOptionsSets": [
+                verbosity: "verbose",
+                scenario: "CopilotMicrosoftCom",
+                plugins: [],
+                traceId: CoreUtils.uuid().replaceAll("-", ""),
+                conversationHistoryOptionsSets: [
                     "autosave",
                     "savemem",
                     "uprofupd",
                     "uprofgen"
                 ],
-                "gptId": "copilot",
-                "isStartOfSession": true,
-                "requestId": uuid,
-                "message": {
-                    "locale": "zh-CN",
-                    "market": "zh-CN",
-                    "region": "",
-                    "location": "",
-                    "userIpAddress": "",
+                gptId: "copilot",
+                isStartOfSession: true,
+                requestId: uuid,
+                message: {
+                    locale: "zh-CN",
+                    market: "zh-CN",
+                    region: "",
+                    location: "",
+                    userIpAddress: "",
                     // "region": "HK",
                     // "location": "lat:47.639557;long:-122.128159;re=1000m;",
                     // "userIpAddress": "2404:c140:1f03:4:e0c3:2bff:fec3:4786",
-                    "timestamp": moment().format(),
-                    "adaptiveCards": [],
-                    "author": "user",
-                    "inputMethod": "Keyboard",
-                    "text": content,
-                    "messageType": "Chat",
-                    "requestId": uuid,
-                    "messageId": uuid
+                    timestamp: moment().format(),
+                    adaptiveCards: [],
+                    author: "user",
+                    inputMethod: "Keyboard",
+                    text: content,
+                    messageType: "Chat",
+                    requestId: uuid,
+                    messageId: uuid
                 },
-                "tone": "Creative",
-                "spokenTextMode": "None",
-                "conversationId": conversation.conversationId,
-                "participant": {
-                    "id": conversation.clientId
+                tone: "Creative",
+                spokenTextMode: "None",
+                conversationId: conversation.conversationId,
+                participant: {
+                    id: conversation.clientId
                 }
             }
         ],
-        "invocationId": "0",
-        "target": "chat",
-        "type": 4
+        invocationId: "0",
+        target: "chat",
+        type: 4
     };
 };
 
-
-export const sendFirstMessage = function (content: string, conversation: CopilotConversation, ws: WebSocket, imageSource?: string) {
-    const t = imageSource ? getImageMessageParams(content, conversation, imageSource) : getCommonTextMessageParams(content, conversation);
+export const sendFirstMessage = function (
+    content: string,
+    conversation: CopilotConversation,
+    ws: WebSocket,
+    imageSource?: string
+) {
+    const t = imageSource
+        ? getImageMessageParams(content, conversation, imageSource)
+        : getCommonTextMessageParams(content, conversation);
 
     ws.send(formatSendMessage(t));
 };
@@ -318,25 +358,31 @@ const findBlockIdAdaptiveCardText = function (adaptiveBody: any[]) {
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < adaptiveBody.length; i++) {
         const body = adaptiveBody[i];
-        if (body["type"] === "TextBlock" && body["id"] === "AttributionsTextBlockID") {
+        if (
+            body["type"] === "TextBlock" &&
+            body["id"] === "AttributionsTextBlockID"
+        ) {
             return body["text"];
         }
     }
 };
 
-export const getConversationResponseFromRaw = function (raw: string, c: CopilotConversation): ConversationResponse | null {
+export const getConversationResponseFromRaw = function (
+    raw: string,
+    c: CopilotConversation
+): ConversationResponse | null {
     const unknownError = new ConversationResponse({
         conversation_id: c.conversationId,
         message_type: ResponseMessageType.ERROR,
-        error: new ChatError(ErrorCode.UNKNOWN_ERROR),
+        error: new ChatError(ErrorCode.UNKNOWN_ERROR)
     });
 
     const conversationDone = new ConversationResponse({
         conversation_id: c.conversationId,
-        message_type: ResponseMessageType.DONE,
+        message_type: ResponseMessageType.DONE
     });
 
-    const jsons = raw.split('\x1E');
+    const jsons = raw.split("\x1E");
 
     if (jsons.length) {
         try {
@@ -350,17 +396,19 @@ export const getConversationResponseFromRaw = function (raw: string, c: CopilotC
                 const response = new ConversationResponse({
                     conversation_id: c.conversationId,
                     message_type: ResponseMessageType.GENERATING,
-                    title: "",
+                    title: ""
                 });
 
                 if (messages && messages[0]) {
                     const message = messages[0];
 
-                    if (message['messageType'] === "Disengaged") {
-                        response.error = new ChatError(ErrorCode.COPILOT_DISENGAGED);
+                    if (message["messageType"] === "Disengaged") {
+                        response.error = new ChatError(
+                            ErrorCode.COPILOT_DISENGAGED
+                        );
                     }
 
-                    const {text, messageId, adaptiveCards} = message;
+                    const { text, messageId, adaptiveCards } = message;
 
                     response.message_id = messageId;
 
@@ -370,25 +418,35 @@ export const getConversationResponseFromRaw = function (raw: string, c: CopilotC
                         const adaptiveCard = adaptiveCards[0];
 
                         if (adaptiveCard["type"] === "AdaptiveCard") {
-                            if (adaptiveCard["body"] && adaptiveCard["body"].length) {
-                                messageText = findCommonAdaptiveCardText(adaptiveCard["body"]);
-                                attributionsTextBlock = findBlockIdAdaptiveCardText(adaptiveCard["body"]);
+                            if (
+                                adaptiveCard["body"] &&
+                                adaptiveCard["body"].length
+                            ) {
+                                messageText = findCommonAdaptiveCardText(
+                                    adaptiveCard["body"]
+                                );
+                                attributionsTextBlock =
+                                    findBlockIdAdaptiveCardText(
+                                        adaptiveCard["body"]
+                                    );
                             }
                         }
 
                         if (messageText) {
                             if (attributionsTextBlock) {
-                                messageText = messageText + "\n\n" + attributionsTextBlock;
+                                messageText =
+                                    messageText +
+                                    "\n\n" +
+                                    attributionsTextBlock;
                             }
 
                             response.message_text = messageText;
 
                             return response;
                         }
-
                     }
 
-                    Logger.log('response.message_text', response.message_text);
+                    Logger.log("response.message_text", response.message_text);
 
                     response.message_text = text;
 
@@ -408,23 +466,32 @@ export const getConversationResponseFromRaw = function (raw: string, c: CopilotC
                         return new ConversationResponse({
                             conversation_id: c.conversationId,
                             message_type: ResponseMessageType.ERROR,
-                            error: new ChatError(ErrorCode.COPILOT_INVALID_REQUEST),
+                            error: new ChatError(
+                                ErrorCode.COPILOT_INVALID_REQUEST
+                            )
                         });
-                    } else if(value === "UnauthorizedRequest") {
+                    } else if (value === "UnauthorizedRequest") {
                         return new ConversationResponse({
                             conversation_id: c.conversationId,
                             message_type: ResponseMessageType.ERROR,
-                            error: new ChatError(ErrorCode.UNAUTHORIZED),
+                            error: new ChatError(ErrorCode.UNAUTHORIZED)
                         });
                     } else if (value === "Success") {
-
-                        const createImageMessage = findImageMessage(item["messages"]);
-                        Logger.log('success =======================');
-                        Logger.log('item', item, item["messages"], createImageMessage);
+                        const createImageMessage = findImageMessage(
+                            item["messages"]
+                        );
+                        Logger.log("success =======================");
+                        Logger.log(
+                            "item",
+                            item,
+                            item["messages"],
+                            createImageMessage
+                        );
                         if (createImageMessage) {
                             const text = createImageMessage["text"];
                             const messageId = createImageMessage["messageId"];
-                            conversationDone.appendix = new CopilotImageCreateAppendix(text, messageId);
+                            conversationDone.appendix =
+                                new CopilotImageCreateAppendix(text, messageId);
 
                             return conversationDone;
                         }
@@ -434,13 +501,13 @@ export const getConversationResponseFromRaw = function (raw: string, c: CopilotC
                         return new ConversationResponse({
                             conversation_id: c.conversationId,
                             message_type: ResponseMessageType.ERROR,
-                            error: new ChatError(ErrorCode.CONVERSATION_LIMIT),
+                            error: new ChatError(ErrorCode.CONVERSATION_LIMIT)
                         });
                     } else if (value === "CaptchaChallenge") {
                         return new ConversationResponse({
                             conversation_id: c.conversationId,
                             message_type: ResponseMessageType.ERROR,
-                            error: new ChatError(ErrorCode.CAPTCHA),
+                            error: new ChatError(ErrorCode.CAPTCHA)
                         });
                     }
                 }

@@ -1,34 +1,56 @@
-import type {IBot, BotConstructorParams, BotCompletionParams} from "~libs/chatbot/IBot";
-import {ChatError, ErrorCode} from "~utils/errors";
-import type {CopilotConversation} from "~background/messages/copilot/init-copilot-conversation";
-import {sendToBackground} from "@plasmohq/messaging";
-import {ConversationResponse, ResponseMessageType} from "~libs/open-ai/open-ai-interface";
-import {getConversationResponseFromRaw, initWss, sendFirstMessage} from "~libs/copilot/copilot-helper";
-import {BotBase} from "~libs/chatbot/BotBase";
-import {SimpleBotMessage} from "~libs/chatbot/BotSessionBase";
-import CopilotSessionSingleton from "~libs/chatbot/copilot/copilotSession";
 import IconOpenAI1 from "data-base64:~assets/simple-icons_openai-1.svg";
+
+import { sendToBackground } from "@plasmohq/messaging";
+import { Storage } from "@plasmohq/storage";
+
+import type { CopilotConversation } from "~background/messages/copilot/init-copilot-conversation";
+import { BotBase } from "~libs/chatbot/BotBase";
+import { SimpleBotMessage } from "~libs/chatbot/BotSessionBase";
+import CopilotSessionSingleton from "~libs/chatbot/copilot/copilotSession";
+import {
+    CopilotFileSingleton,
+    CopilotSupportedMimeTypes
+} from "~libs/chatbot/copilot/fileInstance";
+import type {
+    BotCompletionParams,
+    BotConstructorParams,
+    IBot
+} from "~libs/chatbot/IBot";
+import {
+    checkModelSupportUploadImage,
+    checkModelSupportUploadPDF
+} from "~libs/chatbot/utils";
+import {
+    getConversationResponseFromRaw,
+    initWss,
+    sendFirstMessage
+} from "~libs/copilot/copilot-helper";
+import {
+    ConversationResponse,
+    ResponseMessageType
+} from "~libs/open-ai/open-ai-interface";
 import {
     appendParamToUrl,
     createUuid,
-    IS_OPEN_IN_CHAT_AUTH_WINDOW, IS_OPEN_IN_CHAT_CAPTCHA_WINDOW,
-    MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS, MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS,
+    IS_OPEN_IN_CHAT_AUTH_WINDOW,
+    IS_OPEN_IN_CHAT_CAPTCHA_WINDOW,
+    MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS,
+    MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS,
     WINDOW_FOR_REMOVE_STORAGE_KEY
 } from "~utils";
-import {Storage} from "@plasmohq/storage";
-import {Logger} from "~utils/logger";
-import {CopilotFileSingleton, CopilotSupportedMimeTypes} from "~libs/chatbot/copilot/fileInstance";
-import {checkModelSupportUploadImage, checkModelSupportUploadPDF} from "~libs/chatbot/utils";
+import { ChatError, ErrorCode } from "~utils/errors";
+import { Logger } from "~utils/logger";
 
 export const COPILOT_BUNDLE_VERSION = "1.1725.0";
 
 export class CopilotBot extends BotBase implements IBot {
-    static botName = 'GPT-4-turbo';
+    static botName = "GPT-4-turbo";
     static logoSrc = IconOpenAI1;
-    static desc = 'Suitable for complex problem-solving and visual content analysis.';
-    static loginUrl = 'https://copilot.microsoft.com';
-    static AUTH_WINDOW_KEY = 'cawk';
-    static CAPTCHA_WINDOW_KEY = 'ccwk';
+    static desc =
+        "Suitable for complex problem-solving and visual content analysis.";
+    static loginUrl = "https://copilot.microsoft.com";
+    static AUTH_WINDOW_KEY = "cawk";
+    static CAPTCHA_WINDOW_KEY = "ccwk";
     static maxTokenLimit = 32 * 1000;
     static get supportUploadPDF() {
         return checkModelSupportUploadPDF(CopilotSupportedMimeTypes);
@@ -44,7 +66,9 @@ export class CopilotBot extends BotBase implements IBot {
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.botSession = CopilotSessionSingleton.getInstance(params.globalConversationId);
+        this.botSession = CopilotSessionSingleton.getInstance(
+            params.globalConversationId
+        );
         this.fileInstance = CopilotFileSingleton.getInstance();
     }
 
@@ -53,19 +77,28 @@ export class CopilotBot extends BotBase implements IBot {
     }
 
     async uploadFile(file: File): Promise<string> {
-        const [err, copilotConversation]: [ChatError, CopilotConversation] = await sendToBackground({
-            name: "copilot/init-copilot-conversation",
-            body: {
-                conversationId: this.botSession.session.getBotConversationId(),
-                withRun: true
-            }
-        });
+        const [err, copilotConversation]: [ChatError, CopilotConversation] =
+            await sendToBackground({
+                name: "copilot/init-copilot-conversation",
+                body: {
+                    conversationId:
+                        this.botSession.session.getBotConversationId(),
+                    withRun: true
+                }
+            });
 
         if (copilotConversation && copilotConversation.conversationId) {
-            this.botSession.session.setBotConversationId(copilotConversation.conversationId);
+            this.botSession.session.setBotConversationId(
+                copilotConversation.conversationId
+            );
         }
 
-        return this.fileInstance.uploadFile(file, this.supportedUploadTypes, this.botSession.session.getBotConversationId(), err);
+        return this.fileInstance.uploadFile(
+            file,
+            this.supportedUploadTypes,
+            this.botSession.session.getBotConversationId(),
+            err
+        );
     }
 
     static checkModelCanUse(): Promise<boolean> {
@@ -74,20 +107,29 @@ export class CopilotBot extends BotBase implements IBot {
 
     static async checkIsLogin(): Promise<[ChatError | null, boolean]> {
         return await sendToBackground({
-            name: "copilot/check-login",
+            name: "copilot/check-login"
         });
     }
 
     async startAuth(): Promise<boolean> {
-        const randomKey = '__window_key_' + Math.random() * 1000;
+        const randomKey = "__window_key_" + Math.random() * 1000;
         const copilotAuthValue = createUuid();
 
         Logger.log("hello hello");
 
-        const url = appendParamToUrl(appendParamToUrl(
-            appendParamToUrl(CopilotBot.loginUrl, IS_OPEN_IN_CHAT_AUTH_WINDOW, '1'),
-            WINDOW_FOR_REMOVE_STORAGE_KEY, randomKey
-        ), CopilotBot.AUTH_WINDOW_KEY, copilotAuthValue);
+        const url = appendParamToUrl(
+            appendParamToUrl(
+                appendParamToUrl(
+                    CopilotBot.loginUrl,
+                    IS_OPEN_IN_CHAT_AUTH_WINDOW,
+                    "1"
+                ),
+                WINDOW_FOR_REMOVE_STORAGE_KEY,
+                randomKey
+            ),
+            CopilotBot.AUTH_WINDOW_KEY,
+            copilotAuthValue
+        );
 
         const res = await sendToBackground({
             name: "open-new-window",
@@ -98,7 +140,7 @@ export class CopilotBot extends BotBase implements IBot {
                 focused: true,
                 screenWidth: window.screen.width,
                 screenHeight: window.screen.height
-            },
+            }
         });
 
         const storage = new Storage();
@@ -106,7 +148,9 @@ export class CopilotBot extends BotBase implements IBot {
 
         return new Promise((resolve) => {
             const listener = function (message: any) {
-                if (message.action === MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS) {
+                if (
+                    message.action === MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS
+                ) {
                     if (message.authKey === copilotAuthValue) {
                         chrome.runtime.onMessage.removeListener(listener);
                         resolve(true);
@@ -117,70 +161,94 @@ export class CopilotBot extends BotBase implements IBot {
         });
     }
 
-    async completion({prompt, rid, cb, fileRef, file}: BotCompletionParams): Promise<void> {
+    async completion({
+        prompt,
+        rid,
+        cb,
+        fileRef,
+        file
+    }: BotCompletionParams): Promise<void> {
         let fileSource = "";
 
         if (fileRef) {
             const refObj = this.fileInstance.getRef(fileRef);
 
             if (!refObj || refObj.err) {
-                return cb(rid, new ConversationResponse({
-                    error: refObj?.err ?? new ChatError(ErrorCode.UNKNOWN_ERROR),
-                    message_type: ResponseMessageType.ERROR
-                }));
+                return cb(
+                    rid,
+                    new ConversationResponse({
+                        error:
+                            refObj?.err ??
+                            new ChatError(ErrorCode.UNKNOWN_ERROR),
+                        message_type: ResponseMessageType.ERROR
+                    })
+                );
             }
 
-            Logger.trace('file ref', refObj);
+            Logger.trace("file ref", refObj);
 
             fileSource = refObj!.ref!.blobId;
         } else {
-            if(file) {
+            if (file) {
                 let refObj = this.fileInstance.getRefByFile(file);
 
-                if(!refObj) {
+                if (!refObj) {
                     const newRef = await this.uploadFile(file);
                     refObj = this.fileInstance.getRef(newRef);
                 }
 
-                if(!refObj || refObj.err) {
-                    return cb(rid, new ConversationResponse({
-                        error: refObj?.err || new ChatError(ErrorCode.UNKNOWN_ERROR),
-                        message_type: ResponseMessageType.ERROR
-                    }));
+                if (!refObj || refObj.err) {
+                    return cb(
+                        rid,
+                        new ConversationResponse({
+                            error:
+                                refObj?.err ||
+                                new ChatError(ErrorCode.UNKNOWN_ERROR),
+                            message_type: ResponseMessageType.ERROR
+                        })
+                    );
                 }
 
                 fileSource = refObj!.ref!.blobId;
             }
         }
 
-        Logger.log('file ref', fileSource);
+        Logger.log("file ref", fileSource);
 
-        Logger.log('this.botSession.getBotConversationId() copilot', this.botSession.session.getBotConversationId());
+        Logger.log(
+            "this.botSession.getBotConversationId() copilot",
+            this.botSession.session.getBotConversationId()
+        );
 
-        const [err, copilotConversation]: [ChatError, CopilotConversation] = await sendToBackground({
-            name: "copilot/init-copilot-conversation",
-            body: {
-                conversationId: this.botSession.session.getBotConversationId(),
-                withRun: true
-            }
-        });
+        const [err, copilotConversation]: [ChatError, CopilotConversation] =
+            await sendToBackground({
+                name: "copilot/init-copilot-conversation",
+                body: {
+                    conversationId:
+                        this.botSession.session.getBotConversationId(),
+                    withRun: true
+                }
+            });
 
         if (copilotConversation && copilotConversation.conversationId) {
-            this.botSession.session.setBotConversationId(copilotConversation.conversationId);
+            this.botSession.session.setBotConversationId(
+                copilotConversation.conversationId
+            );
         }
 
-        Logger.trace('copilotConversation', copilotConversation, err);
+        Logger.trace("copilotConversation", copilotConversation, err);
 
         if (err) {
             return cb(
                 rid,
                 new ConversationResponse({
-                    conversation_id: this.botSession.session.getBotConversationId(),
-                    parent_message_id: this.botSession.session.getParentMessageId(),
+                    conversation_id:
+                        this.botSession.session.getBotConversationId(),
+                    parent_message_id:
+                        this.botSession.session.getParentMessageId(),
                     message_type: ResponseMessageType.ERROR,
                     error: err
-                }
-                )
+                })
             );
         }
 
@@ -197,7 +265,10 @@ export class CopilotBot extends BotBase implements IBot {
         }
 
         wss.onmessage = (event) => {
-            const data = getConversationResponseFromRaw(event.data, copilotConversation);
+            const data = getConversationResponseFromRaw(
+                event.data,
+                copilotConversation
+            );
 
             if (data) {
                 if (data?.error) {
@@ -210,17 +281,21 @@ export class CopilotBot extends BotBase implements IBot {
 
                 if (data) {
                     switch (data.message_type) {
-                    case ResponseMessageType.DONE:
-                    case ResponseMessageType.ERROR:
-                        wss.close();
-                        break;
+                        case ResponseMessageType.DONE:
+                        case ResponseMessageType.ERROR:
+                            wss.close();
+                            break;
                     }
-                    this.botSession.session.addMessage(new SimpleBotMessage(data.message_text ?? "", data.message_id ?? ""));
+                    this.botSession.session.addMessage(
+                        new SimpleBotMessage(
+                            data.message_text ?? "",
+                            data.message_id ?? ""
+                        )
+                    );
 
                     cb(rid, data);
                 }
             }
-
         };
 
         wss.onclose = () => {
@@ -234,18 +309,26 @@ export class CopilotBot extends BotBase implements IBot {
         sendFirstMessage(prompt, copilotConversation, wss, fileSource);
         // sendFirstMessage(prompt, copilotConversation, wss);
 
-
         return Promise.resolve(undefined);
     }
 
     async startCaptcha(): Promise<boolean> {
-        const randomKey = '__window_key_' + Math.random() * 1000;
+        const randomKey = "__window_key_" + Math.random() * 1000;
         const copilotCaptchaValue = createUuid();
 
-        const url = appendParamToUrl(appendParamToUrl(
-            appendParamToUrl(CopilotBot.loginUrl, IS_OPEN_IN_CHAT_CAPTCHA_WINDOW, '1'),
-            WINDOW_FOR_REMOVE_STORAGE_KEY, randomKey
-        ), CopilotBot.CAPTCHA_WINDOW_KEY, copilotCaptchaValue);
+        const url = appendParamToUrl(
+            appendParamToUrl(
+                appendParamToUrl(
+                    CopilotBot.loginUrl,
+                    IS_OPEN_IN_CHAT_CAPTCHA_WINDOW,
+                    "1"
+                ),
+                WINDOW_FOR_REMOVE_STORAGE_KEY,
+                randomKey
+            ),
+            CopilotBot.CAPTCHA_WINDOW_KEY,
+            copilotCaptchaValue
+        );
 
         const res = await sendToBackground({
             name: "open-new-window",
@@ -256,7 +339,7 @@ export class CopilotBot extends BotBase implements IBot {
                 focused: true,
                 screenWidth: window.screen.width,
                 screenHeight: window.screen.height
-            },
+            }
         });
 
         const storage = new Storage();
@@ -264,8 +347,15 @@ export class CopilotBot extends BotBase implements IBot {
 
         return new Promise((resolve) => {
             const listener = function (message: any) {
-                if (message.action === MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS) {
-                    Logger.trace('openaiCaptchaValue', copilotCaptchaValue, message.authKey);
+                if (
+                    message.action ===
+                    MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS
+                ) {
+                    Logger.trace(
+                        "openaiCaptchaValue",
+                        copilotCaptchaValue,
+                        message.authKey
+                    );
                     if (message.authKey === copilotCaptchaValue) {
                         chrome.runtime.onMessage.removeListener(listener);
                         resolve(true);

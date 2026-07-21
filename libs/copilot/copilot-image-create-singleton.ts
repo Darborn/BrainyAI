@@ -10,7 +10,7 @@ export class CopilotImageCreateSingleton {
             instSuffixIncrement: 1
         },
         features: {
-            enableAnsCardSfx: !1,
+            enableAnsCardSfx: !1
         }
     };
     private kSeedIncrement = 500;
@@ -31,7 +31,8 @@ export class CopilotImageCreateSingleton {
 
     static getInstance(text: string, messageId: string) {
         if (!CopilotImageCreateSingleton.instance) {
-            CopilotImageCreateSingleton.instance = new CopilotImageCreateSingleton(text, messageId);
+            CopilotImageCreateSingleton.instance =
+                new CopilotImageCreateSingleton(text, messageId);
         }
 
         return CopilotImageCreateSingleton.instance;

@@ -1,5 +1,8 @@
-import {PerplexityBot, PerplexitySession} from "~libs/chatbot/perplexity/PerplexityBase";
-import type {BotConstructorParams} from "~libs/chatbot/IBot";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import {
+    PerplexityBot,
+    PerplexitySession
+} from "~libs/chatbot/perplexity/PerplexityBase";
 
 class Llama3SonarLarge32KChatSessionSingleton {
     static model = "";
@@ -10,10 +13,15 @@ class Llama3SonarLarge32KChatSessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         Llama3SonarLarge32KChatSessionSingleton.model = model;
 
-        if (Llama3SonarLarge32KChatSessionSingleton?.sessionInstance?.wsClosed) {
+        if (
+            Llama3SonarLarge32KChatSessionSingleton?.sessionInstance?.wsClosed
+        ) {
             Llama3SonarLarge32KChatSessionSingleton.destroy();
         }
 
@@ -22,7 +30,10 @@ class Llama3SonarLarge32KChatSessionSingleton {
         }
 
         if (!Llama3SonarLarge32KChatSessionSingleton.sessionInstance) {
-            Llama3SonarLarge32KChatSessionSingleton.sessionInstance = new PerplexitySession(Llama3SonarLarge32KChatSessionSingleton.model);
+            Llama3SonarLarge32KChatSessionSingleton.sessionInstance =
+                new PerplexitySession(
+                    Llama3SonarLarge32KChatSessionSingleton.model
+                );
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -38,13 +49,18 @@ class Llama3SonarLarge32KChatSessionSingleton {
 
 export class Llama3SonarLarge32KChat extends PerplexityBot {
     model = "llama-3-sonar-large-32k-chat";
-    static botName = 'llama-3-sonar-large-32k-chat';
-    static desc = 'Suitable for tasks that require sophisticated dialogue capabilities, such as virtual assistants, chatbots, and interactive AI companions.';
+    static botName = "llama-3-sonar-large-32k-chat";
+    static desc =
+        "Suitable for tasks that require sophisticated dialogue capabilities, such as virtual assistants, chatbots, and interactive AI companions.";
     static maxTokenLimit = 32 * 1000;
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.perplexitySession = Llama3SonarLarge32KChatSessionSingleton.getInstance(params, this.model);
+        this.perplexitySession =
+            Llama3SonarLarge32KChatSessionSingleton.getInstance(
+                params,
+                this.model
+            );
     }
 
     getBotName(): string {

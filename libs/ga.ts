@@ -1,10 +1,11 @@
-import {Logger} from "~utils/logger";
-const GA_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
-const GA_DEBUG_ENDPOINT = 'https://www.google-analytics.com/debug/mp/collect';
+import { Logger } from "~utils/logger";
+
+const GA_ENDPOINT = "https://www.google-analytics.com/mp/collect";
+const GA_DEBUG_ENDPOINT = "https://www.google-analytics.com/debug/mp/collect";
 
 // Get via https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#recommended_parameters_for_reports
-const MEASUREMENT_ID = process.env.PLASMO_PUBLIC_MEASUREMENT_ID ?? '';
-const API_SECRET = process.env.PLASMO_PUBLIC_API_SECRET ?? '';
+const MEASUREMENT_ID = process.env.PLASMO_PUBLIC_MEASUREMENT_ID ?? "";
+const API_SECRET = process.env.PLASMO_PUBLIC_API_SECRET ?? "";
 const DEFAULT_ENGAGEMENT_TIME_MSEC = 100;
 
 // Duration of inactivity after which a new session is created
@@ -12,14 +13,14 @@ const SESSION_EXPIRATION_IN_MIN = 30;
 export class Analytics {
     private readonly debug: boolean = false;
     constructor(debug?: boolean) {
-        this.debug = debug ?? process.env.NODE_ENV === 'development';
+        this.debug = debug ?? process.env.NODE_ENV === "development";
     }
 
     // Returns the client id, or creates a new one if one doesn't exist.
     // Stores client id in local storage to keep the same client id as long as
     // the extension is installed.
     async getOrCreateClientId() {
-        let { clientId } = await chrome.storage.local.get('clientId');
+        let { clientId } = await chrome.storage.local.get("clientId");
         if (!clientId) {
             // Generate a unique client ID, the actual value is not relevant
             clientId = self.crypto.randomUUID();
@@ -32,12 +33,13 @@ export class Analytics {
     // the previous one has expired.
     async getOrCreateSessionId() {
         // Use storage.session because it is only in memory
-        let { sessionData } = await chrome.storage.session.get('sessionData');
+        let { sessionData } = await chrome.storage.session.get("sessionData");
         const currentTimeInMs = Date.now();
         // Check if session exists and is still valid
         if (sessionData && sessionData.timestamp) {
             // Calculate how long ago the session was last updated
-            const durationInMin = (currentTimeInMs - sessionData.timestamp) / 60000;
+            const durationInMin =
+                (currentTimeInMs - sessionData.timestamp) / 60000;
             // Check if last update lays past the session expiration threshold
             if (durationInMin > SESSION_EXPIRATION_IN_MIN) {
                 // Clear old session id to start a new session
@@ -60,7 +62,10 @@ export class Analytics {
     }
 
     // Fires an event with optional params. Event names must only include letters and underscores.
-    async fireEvent(name: string, params: Record<string, string | number | boolean> = {}) {
+    async fireEvent(
+        name: string,
+        params: Record<string, string | number | boolean> = {}
+    ) {
         // Configure session id and engagement time if not present, for more details see:
         // https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#recommended_parameters_for_reports
         if (!params.session_id) {
@@ -70,7 +75,7 @@ export class Analytics {
             params.engagement_time_msec = DEFAULT_ENGAGEMENT_TIME_MSEC;
         }
 
-        if(!MEASUREMENT_ID || !API_SECRET) return;
+        if (!MEASUREMENT_ID || !API_SECRET) return;
 
         try {
             const response = await fetch(
@@ -78,7 +83,7 @@ export class Analytics {
                     this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT
                 }?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
                 {
-                    method: 'POST',
+                    method: "POST",
                     body: JSON.stringify({
                         client_id: await this.getOrCreateClientId(),
                         events: [
@@ -102,13 +107,20 @@ export class Analytics {
             }
             Logger.log(await response.text());
         } catch (e) {
-            Logger.error('Google Analytics request failed with an exception', e);
+            Logger.error(
+                "Google Analytics request failed with an exception",
+                e
+            );
         }
     }
 
     // Fire a page view event.
-    firePageViewEvent(pageTitle: string, pageLocation: string, additionalParams = {}) {
-        return this.fireEvent('page_view', {
+    firePageViewEvent(
+        pageTitle: string,
+        pageLocation: string,
+        additionalParams = {}
+    ) {
+        return this.fireEvent("page_view", {
             page_title: pageTitle,
             page_location: pageLocation,
             ...additionalParams
@@ -119,7 +131,7 @@ export class Analytics {
     async fireErrorEvent(error, additionalParams = {}) {
         // Note: 'error' is a reserved event name and cannot be used
         // see https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference?client_type=gtag#reserved_names
-        return this.fireEvent('extension_error', {
+        return this.fireEvent("extension_error", {
             ...error,
             ...additionalParams
         });

@@ -1,17 +1,17 @@
 {
-  "extends": "plasmo/templates/tsconfig.base",
-  "exclude": ["node_modules"],
-  "include": [
-    ".plasmo/index.d.ts",
-    "./**/*.ts",
-    "./**/*.tsx",
-    "eslint.config.cjs",
-    "vitest.config.ts"
-  ],
-  "compilerOptions": {
-    "paths": { "~*": ["./*"] },
-    "baseUrl": ".",
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "extends": "plasmo/templates/tsconfig.base",
+    "exclude": ["node_modules"],
+    "include": [
+        ".plasmo/index.d.ts",
+        "./**/*.ts",
+        "./**/*.tsx",
+        "eslint.config.cjs",
+        "vitest.config.ts"
+    ],
+    "compilerOptions": {
+        "paths": { "~*": ["./*"] },
+        "baseUrl": ".",
+        "strictNullChecks": true,
+        "forceConsistentCasingInFileNames": true
+    }
 }

@@ -1,5 +1,3 @@
 export default function FunctionalSideBar() {
-    return <div>
-
-    </div>;
+    return <div></div>;
 }

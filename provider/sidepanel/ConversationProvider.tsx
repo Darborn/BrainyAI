@@ -1,12 +1,16 @@
-import React, {useContext, useEffect, useState} from "react";
-import {SidePanelContext} from "~provider/sidepanel/SidePanelProvider";
-import type {IAskAi} from "~libs/open-ai/open-panel";
-import {ModelManagementContext, type Ms} from "~provider/ModelManagementProvider";
-import {createUuid} from "~utils";
+import React, { useContext, useEffect, useState } from "react";
+
 import eventBus from "~libs/EventBus";
+import type { IAskAi } from "~libs/open-ai/open-panel";
+import {
+    ModelManagementContext,
+    type Ms
+} from "~provider/ModelManagementProvider";
+import { SidePanelContext } from "~provider/sidepanel/SidePanelProvider";
+import { createUuid } from "~utils";
 
 interface IConversationContext {
-    messages: ConversationMessage[],
+    messages: ConversationMessage[];
     setMessages: React.Dispatch<React.SetStateAction<ConversationMessage[]>>;
     conversationId: string;
     setConversationId: React.Dispatch<React.SetStateAction<string>>;
@@ -19,11 +23,11 @@ interface IConversationContext {
 
 export class ConversationMessage {
     id: string;
-    foree: 'bot' | 'user';
+    foree: "bot" | "user";
     data: IAskAi;
     botProviders?: Ms;
 
-    constructor(foree: 'bot' | 'user', data: IAskAi, botProviders?: Ms) {
+    constructor(foree: "bot" | "user", data: IAskAi, botProviders?: Ms) {
         // random id with timestamp
         this.id = `${Date.now()}-${Math.random()}`;
         this.foree = foree;
@@ -34,15 +38,25 @@ export class ConversationMessage {
     }
 }
 
-export const ConversationContext = React.createContext<IConversationContext>({} as IConversationContext);
+export const ConversationContext = React.createContext<IConversationContext>(
+    {} as IConversationContext
+);
 
-export const ConversationProvider = ({children}: { children: React.ReactNode }) => {
-    const {askAiData} = useContext(SidePanelContext);
-    const [messages, setMessages] = useState<IConversationContext['messages']>([]);
-    const [globalConversationId, setGlobalConversationId] = useState<IConversationContext['conversationId']>(createUuid());
-    const [isGeneratingMessage, setIsGeneratingMessage] = useState<IConversationContext['isGeneratingMessage']>(false);
-    const [conversationTitle, setConversationTitle] = useState<string>('');
-    const {currentBots} = useContext(ModelManagementContext);
+export const ConversationProvider = ({
+    children
+}: {
+    children: React.ReactNode;
+}) => {
+    const { askAiData } = useContext(SidePanelContext);
+    const [messages, setMessages] = useState<IConversationContext["messages"]>(
+        []
+    );
+    const [globalConversationId, setGlobalConversationId] =
+        useState<IConversationContext["conversationId"]>(createUuid());
+    const [isGeneratingMessage, setIsGeneratingMessage] =
+        useState<IConversationContext["isGeneratingMessage"]>(false);
+    const [conversationTitle, setConversationTitle] = useState<string>("");
+    const { currentBots } = useContext(ModelManagementContext);
 
     const resetConversation = () => {
         setGlobalConversationId(createUuid());
@@ -50,34 +64,41 @@ export const ConversationProvider = ({children}: { children: React.ReactNode }) 
         setMessages([]);
     };
 
-    useEffect( () => {
+    useEffect(() => {
         if (askAiData) {
-            const userMessage = new ConversationMessage('user', askAiData);
-            const botMessage = new ConversationMessage('bot', askAiData, currentBots);
+            const userMessage = new ConversationMessage("user", askAiData);
+            const botMessage = new ConversationMessage(
+                "bot",
+                askAiData,
+                currentBots
+            );
 
-            setMessages(preState => [...preState, userMessage, botMessage]);
+            setMessages((preState) => [...preState, userMessage, botMessage]);
         }
     }, [askAiData]);
 
     useEffect(() => {
-        eventBus.on('newChat', resetConversation);
+        eventBus.on("newChat", resetConversation);
 
         return () => {
-            eventBus.removeListener('newChat', resetConversation);
+            eventBus.removeListener("newChat", resetConversation);
         };
-    },[]);
+    }, []);
 
-    return <ConversationContext.Provider value={{
-        messages,
-        setMessages,
-        conversationId: globalConversationId,
-        setConversationId: setGlobalConversationId,
-        isGeneratingMessage,
-        setIsGeneratingMessage,
-        conversationTitle,
-        setConversationTitle,
-        resetConversation
-    }}>
-        {children}
-    </ConversationContext.Provider>;
+    return (
+        <ConversationContext.Provider
+            value={{
+                messages,
+                setMessages,
+                conversationId: globalConversationId,
+                setConversationId: setGlobalConversationId,
+                isGeneratingMessage,
+                setIsGeneratingMessage,
+                conversationTitle,
+                setConversationTitle,
+                resetConversation
+            }}>
+            {children}
+        </ConversationContext.Provider>
+    );
 };

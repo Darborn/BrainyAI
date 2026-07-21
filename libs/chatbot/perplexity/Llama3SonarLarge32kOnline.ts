@@ -1,5 +1,8 @@
-import {PerplexityBot, PerplexitySession} from "~libs/chatbot/perplexity/PerplexityBase";
-import type {BotConstructorParams} from "~libs/chatbot/IBot";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import {
+    PerplexityBot,
+    PerplexitySession
+} from "~libs/chatbot/perplexity/PerplexityBase";
 
 class Llama3SonarLarge32kOnlineSessionSingleton {
     static model = "";
@@ -10,10 +13,15 @@ class Llama3SonarLarge32kOnlineSessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         Llama3SonarLarge32kOnlineSessionSingleton.model = model;
 
-        if (Llama3SonarLarge32kOnlineSessionSingleton?.sessionInstance?.wsClosed) {
+        if (
+            Llama3SonarLarge32kOnlineSessionSingleton?.sessionInstance?.wsClosed
+        ) {
             Llama3SonarLarge32kOnlineSessionSingleton.destroy();
         }
 
@@ -22,7 +30,10 @@ class Llama3SonarLarge32kOnlineSessionSingleton {
         }
 
         if (!Llama3SonarLarge32kOnlineSessionSingleton.sessionInstance) {
-            Llama3SonarLarge32kOnlineSessionSingleton.sessionInstance = new PerplexitySession(Llama3SonarLarge32kOnlineSessionSingleton.model);
+            Llama3SonarLarge32kOnlineSessionSingleton.sessionInstance =
+                new PerplexitySession(
+                    Llama3SonarLarge32kOnlineSessionSingleton.model
+                );
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -39,12 +50,17 @@ class Llama3SonarLarge32kOnlineSessionSingleton {
 export class Llama3SonarLarge32kOnline extends PerplexityBot {
     model = "llama-3-sonar-large-32k-online";
     static botName = "llama-3-sonar-large-32k-online";
-    static desc = 'Suitable for engaging online chat and dialogue, with a focus on providing helpful and factual responses.';
+    static desc =
+        "Suitable for engaging online chat and dialogue, with a focus on providing helpful and factual responses.";
     static maxTokenLimit = 32 * 1000;
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.perplexitySession = Llama3SonarLarge32kOnlineSessionSingleton.getInstance(params, this.model);
+        this.perplexitySession =
+            Llama3SonarLarge32kOnlineSessionSingleton.getInstance(
+                params,
+                this.model
+            );
     }
 
     getBotName(): string {

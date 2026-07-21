@@ -1,4 +1,4 @@
 export const PromptTypes = {
-    DEFAULT: 'default',
-    CUSTOM: 'custom',
+    DEFAULT: "default",
+    CUSTOM: "custom"
 };

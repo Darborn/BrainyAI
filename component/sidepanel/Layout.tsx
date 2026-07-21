@@ -1,5 +1,3 @@
 export default function SidePanelLayout() {
-    return <div>
-
-    </div>;
+    return <div></div>;
 }

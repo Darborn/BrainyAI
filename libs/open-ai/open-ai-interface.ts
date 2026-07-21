@@ -1,5 +1,5 @@
-import type {ChatError} from "~utils/errors";
-import type {ConversationMessageAppendix} from "~component/MessageAppendix";
+import type { ConversationMessageAppendix } from "~component/MessageAppendix";
+import type { ChatError } from "~utils/errors";
 
 export interface IOpenAISessionResponse {
     user?: {
@@ -34,7 +34,7 @@ export interface IChatRequirementsResponse {
         seed: string;
         difficulty: string;
     };
-    token: string
+    token: string;
 }
 
 interface AccountProcessor {
@@ -80,14 +80,17 @@ interface Account {
     promo_data: any;
 }
 
-type Accounts = Record<string, {
+type Accounts = Record<
+    string,
+    {
         account: Account;
         features: string[];
         entitlement: AccountEntitlement;
         rate_limits: any[];
         last_active_subscription: AccountLastActiveSubscription;
         is_eligible_for_yearly_plus_subscription: boolean;
-    }>;
+    }
+>;
 
 type AccountOrdering = Record<number, string>;
 
@@ -98,7 +101,7 @@ export interface IOpenaiAccountData {
 
 export enum GenerateStatus {
     GENERATING = "generating",
-    DONE = "done",
+    DONE = "done"
 }
 
 export enum ResponseMessageType {
@@ -107,7 +110,7 @@ export enum ResponseMessageType {
     TITLED = "titled",
     ERROR = "error",
     ERROR_RETRY_MESSAGE = "error_retry_message",
-    ERROR_NEED_NEW_CONVERSATION = "error_need_new_conversation",
+    ERROR_NEED_NEW_CONVERSATION = "error_need_new_conversation"
 }
 
 export class ConversationResponse {
@@ -120,7 +123,24 @@ export class ConversationResponse {
     appendix?: ConversationMessageAppendix;
     adaptiveCards?: any;
 
-    constructor({conversation_id, message_id, message_text,  message_type,title, error, appendix}: {conversation_id?: string, parent_message_id?: string, message_id?: string, message_text?: string, message_type: ResponseMessageType, title?: string, error?: ChatError, appendix?: ConversationMessageAppendix}) {
+    constructor({
+        conversation_id,
+        message_id,
+        message_text,
+        message_type,
+        title,
+        error,
+        appendix
+    }: {
+        conversation_id?: string;
+        parent_message_id?: string;
+        message_id?: string;
+        message_text?: string;
+        message_type: ResponseMessageType;
+        title?: string;
+        error?: ChatError;
+        appendix?: ConversationMessageAppendix;
+    }) {
         this.conversation_id = conversation_id;
         this.message_id = message_id;
         this.message_text = message_text;

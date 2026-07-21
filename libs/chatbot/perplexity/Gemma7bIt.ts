@@ -1,5 +1,8 @@
-import {PerplexityBot, PerplexitySession} from "~libs/chatbot/perplexity/PerplexityBase";
-import type {BotConstructorParams} from "~libs/chatbot/IBot";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import {
+    PerplexityBot,
+    PerplexitySession
+} from "~libs/chatbot/perplexity/PerplexityBase";
 
 class Gemma7BLTSessionSingleton {
     static model = "";
@@ -10,7 +13,10 @@ class Gemma7BLTSessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         Gemma7BLTSessionSingleton.model = model;
 
         if (Gemma7BLTSessionSingleton?.sessionInstance?.wsClosed) {
@@ -22,7 +28,9 @@ class Gemma7BLTSessionSingleton {
         }
 
         if (!Gemma7BLTSessionSingleton.sessionInstance) {
-            Gemma7BLTSessionSingleton.sessionInstance = new PerplexitySession(Gemma7BLTSessionSingleton.model);
+            Gemma7BLTSessionSingleton.sessionInstance = new PerplexitySession(
+                Gemma7BLTSessionSingleton.model
+            );
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -36,16 +44,19 @@ class Gemma7BLTSessionSingleton {
     }
 }
 
-
 export class Gemma7bIt extends PerplexityBot {
-    static botName = 'gemma-7b-it';
+    static botName = "gemma-7b-it";
     model = "gemma-7b-it";
-    static desc = 'Suitable for more complex text generation tasks that require advanced natural language understanding and processing.';
+    static desc =
+        "Suitable for more complex text generation tasks that require advanced natural language understanding and processing.";
     static maxTokenLimit = 8 * 1000;
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.perplexitySession = Gemma7BLTSessionSingleton.getInstance(params, this.model);
+        this.perplexitySession = Gemma7BLTSessionSingleton.getInstance(
+            params,
+            this.model
+        );
     }
 
     getBotName(): string {

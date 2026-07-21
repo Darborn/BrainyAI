@@ -1,28 +1,41 @@
-import {
-    type IBot, type BotConstructorParams,
-    type BotCompletionParams,
-} from "~libs/chatbot/IBot";
-import {ConversationResponse,  ResponseMessageType} from "~libs/open-ai/open-ai-interface";
-import {OpenAIAuth} from "~libs/open-ai/open-ai-auth";
-import {OpenAiApi} from "~libs/open-ai/open-ai-api";
-import {ChatError, ErrorCode} from "~utils/errors";
-import {BotBase, BotSupportedMimeType} from "~libs/chatbot/BotBase";
-import {BotSession, SimpleBotMessage} from "~libs/chatbot/BotSessionBase";
 import IconOpenAI from "data-base64:~assets/simple-icons_openai.svg";
-import {sendToBackground} from "@plasmohq/messaging";
-import  ArkoseGlobalSingleton from "~libs/chatbot/openai/Arkose";
-import {Logger} from "~utils/logger";
+
+import { sendToBackground } from "@plasmohq/messaging";
+import { Storage } from "@plasmohq/storage";
+
+import XFramePerplexityChat from "~component/xframe/perplexity-chat";
+import { BotBase, BotSupportedMimeType } from "~libs/chatbot/BotBase";
+import { BotSession, SimpleBotMessage } from "~libs/chatbot/BotSessionBase";
+import {
+    type BotCompletionParams,
+    type BotConstructorParams,
+    type IBot
+} from "~libs/chatbot/IBot";
+import ArkoseGlobalSingleton from "~libs/chatbot/openai/Arkose";
+import {
+    OpenAiFileRef,
+    OpenAiFileSingleton
+} from "~libs/chatbot/openai/fileInstance";
+import { OpenAiUserModelInfoSingleton } from "~libs/chatbot/openai/ModelInstance";
+import { OpenAiApi } from "~libs/open-ai/open-ai-api";
+import { OpenAIAuth } from "~libs/open-ai/open-ai-auth";
+import {
+    ConversationResponse,
+    ResponseMessageType
+} from "~libs/open-ai/open-ai-interface";
 import {
     appendParamToUrl,
-    createUuid, IS_OPEN_IN_CHAT_AUTH_WINDOW,
-    IS_OPEN_IN_CHAT_CAPTCHA_WINDOW, IS_OPEN_IN_PLUGIN, MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS,
-    MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS, R_SCP_PARAM,
+    createUuid,
+    IS_OPEN_IN_CHAT_AUTH_WINDOW,
+    IS_OPEN_IN_CHAT_CAPTCHA_WINDOW,
+    IS_OPEN_IN_PLUGIN,
+    MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS,
+    MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS,
+    R_SCP_PARAM,
     WINDOW_FOR_REMOVE_STORAGE_KEY
 } from "~utils";
-import XFramePerplexityChat from "~component/xframe/perplexity-chat";
-import {OpenAiFileRef, OpenAiFileSingleton} from "~libs/chatbot/openai/fileInstance";
-import {OpenAiUserModelInfoSingleton} from "~libs/chatbot/openai/ModelInstance";
-import {Storage} from "@plasmohq/storage";
+import { ChatError, ErrorCode } from "~utils/errors";
+import { Logger } from "~utils/logger";
 
 export class OpenaiAuthSingleton {
     private static instance: OpenaiAuthSingleton;
@@ -48,7 +61,9 @@ class OpenAiSessionSingleton {
     session: BotSession;
 
     private constructor() {
-        this.session = new BotSession(OpenAiSessionSingleton.globalConversationId);
+        this.session = new BotSession(
+            OpenAiSessionSingleton.globalConversationId
+        );
     }
 
     static destroy() {
@@ -57,7 +72,9 @@ class OpenAiSessionSingleton {
     }
 
     static getInstance(globalConversationId: string) {
-        if (globalConversationId !== OpenAiSessionSingleton.globalConversationId) {
+        if (
+            globalConversationId !== OpenAiSessionSingleton.globalConversationId
+        ) {
             OpenAiSessionSingleton.destroy();
         }
 
@@ -71,15 +88,14 @@ class OpenAiSessionSingleton {
     }
 }
 
-
 export class OpenaiBot extends BotBase implements IBot {
     model = "text-davinci-002-render-sha";
     static logoSrc = IconOpenAI;
-    static loginUrl = 'https://chatgpt.com';
+    static loginUrl = "https://chatgpt.com";
     static requireLogin = true;
-    static CAPTCHA_WINDOW_KEY = 'oai_captcha_window_key';
+    static CAPTCHA_WINDOW_KEY = "oai_captcha_window_key";
     static maxTokenLimit = 8191;
-    static AUTH_WINDOW_KEY = 'oawk';
+    static AUTH_WINDOW_KEY = "oawk";
     static supportUploadPDF = true;
     static supportUploadImage = true;
     botSession: OpenAiSessionSingleton;
@@ -92,36 +108,54 @@ export class OpenaiBot extends BotBase implements IBot {
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.botSession = OpenAiSessionSingleton.getInstance(params.globalConversationId);
+        this.botSession = OpenAiSessionSingleton.getInstance(
+            params.globalConversationId
+        );
         this.authInstance = OpenaiAuthSingleton.getInstance();
         this.arkoseInstance = ArkoseGlobalSingleton.getInstance();
         this.fileInstance = OpenAiFileSingleton.getInstance();
     }
 
     static async checkIsLogin(): Promise<[ChatError | null, boolean]> {
-        if(OpenaiAuthSingleton.getInstance().auth.authSessionInfo?.accessToken) {
+        if (
+            OpenaiAuthSingleton.getInstance().auth.authSessionInfo?.accessToken
+        ) {
             return Promise.resolve([null, true]);
         }
 
-        const [err] = await OpenaiAuthSingleton.getInstance().auth.initSessionInfo();
+        const [err] =
+            await OpenaiAuthSingleton.getInstance().auth.initSessionInfo();
 
-        Logger.trace('checkIsLogin', err);
+        Logger.trace("checkIsLogin", err);
 
-        if(err) {
+        if (err) {
             return [err, false];
         }
 
-        return [null, !!OpenaiAuthSingleton.getInstance().auth.authSessionInfo?.accessToken];
+        return [
+            null,
+            !!OpenaiAuthSingleton.getInstance().auth.authSessionInfo
+                ?.accessToken
+        ];
     }
 
     async startAuth(): Promise<boolean> {
-        const randomKey = '__window_key_' + Math.random() * 1000;
+        const randomKey = "__window_key_" + Math.random() * 1000;
         const openAiAuthValue = createUuid();
 
-        const url = appendParamToUrl(appendParamToUrl(
-            appendParamToUrl(OpenaiBot.loginUrl, IS_OPEN_IN_CHAT_AUTH_WINDOW, '1'),
-            WINDOW_FOR_REMOVE_STORAGE_KEY, randomKey
-        ), OpenaiBot.AUTH_WINDOW_KEY, openAiAuthValue);
+        const url = appendParamToUrl(
+            appendParamToUrl(
+                appendParamToUrl(
+                    OpenaiBot.loginUrl,
+                    IS_OPEN_IN_CHAT_AUTH_WINDOW,
+                    "1"
+                ),
+                WINDOW_FOR_REMOVE_STORAGE_KEY,
+                randomKey
+            ),
+            OpenaiBot.AUTH_WINDOW_KEY,
+            openAiAuthValue
+        );
 
         const res = await sendToBackground({
             name: "open-new-window",
@@ -132,16 +166,22 @@ export class OpenaiBot extends BotBase implements IBot {
                 focused: true,
                 screenWidth: window.screen.width,
                 screenHeight: window.screen.height
-            },
+            }
         });
 
         const storage = new Storage();
         await storage.set(randomKey, res);
         return new Promise((resolve) => {
             const listener = function (message: any) {
-                if (message.action === MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS) {
+                if (
+                    message.action === MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS
+                ) {
                     if (message.authKey === openAiAuthValue) {
-                        Logger.trace('openAiAuthValue success', openAiAuthValue, message.authKey);
+                        Logger.trace(
+                            "openAiAuthValue success",
+                            openAiAuthValue,
+                            message.authKey
+                        );
                         chrome.runtime.onMessage.removeListener(listener);
                         resolve(true);
                     }
@@ -151,7 +191,13 @@ export class OpenaiBot extends BotBase implements IBot {
         });
     }
 
-    async completion({prompt, rid, cb, fileRef, file}: BotCompletionParams): Promise<void> {
+    async completion({
+        prompt,
+        rid,
+        cb,
+        fileRef,
+        file
+    }: BotCompletionParams): Promise<void> {
         // await sendToBackground({
         //     name: "fix-partition-cookie",
         //     body: {
@@ -164,52 +210,62 @@ export class OpenaiBot extends BotBase implements IBot {
         if (fileRef) {
             const refObj = this.fileInstance.getRefs(fileRef);
 
-            Logger.trace('refObj', refObj);
+            Logger.trace("refObj", refObj);
 
             if (!refObj || refObj.err) {
-                return cb(rid, new ConversationResponse({
-                    error: refObj?.err ?? new ChatError(ErrorCode.UNKNOWN_ERROR),
-                    message_type: ResponseMessageType.ERROR
-                }));
+                return cb(
+                    rid,
+                    new ConversationResponse({
+                        error:
+                            refObj?.err ??
+                            new ChatError(ErrorCode.UNKNOWN_ERROR),
+                        message_type: ResponseMessageType.ERROR
+                    })
+                );
             }
 
             ref = refObj!.ref;
         } else {
-            if(file) {
+            if (file) {
                 let refObj = this.fileInstance.getRefByFile(file);
 
-                if(!refObj) {
+                if (!refObj) {
                     const newRef = await this.uploadFile(file);
                     refObj = this.fileInstance.getRefs(newRef);
                 }
 
-                if(!refObj || refObj.err) {
-                    return cb(rid, new ConversationResponse({
-                        error: refObj?.err || new ChatError(ErrorCode.UNKNOWN_ERROR),
-                        message_type: ResponseMessageType.ERROR
-                    }));
+                if (!refObj || refObj.err) {
+                    return cb(
+                        rid,
+                        new ConversationResponse({
+                            error:
+                                refObj?.err ||
+                                new ChatError(ErrorCode.UNKNOWN_ERROR),
+                            message_type: ResponseMessageType.ERROR
+                        })
+                    );
                 }
 
                 ref = refObj!.ref;
             }
         }
 
-        Logger.trace('openai completion', ref);
+        Logger.trace("openai completion", ref);
 
         const opeAiAuthInstance = this.authInstance;
         const [err] = await opeAiAuthInstance.auth.init();
 
         if (err) {
-            Logger.trace('openai auth error 123', err);
+            Logger.trace("openai auth error 123", err);
             cb(
                 rid,
                 new ConversationResponse({
                     conversation_id: this.botSession.session.botConversationId,
-                    parent_message_id: this.botSession.session.getParentMessageId(),
+                    parent_message_id:
+                        this.botSession.session.getParentMessageId(),
                     message_type: ResponseMessageType.ERROR,
                     error: err
-                }
-                )
+                })
             );
 
             return;
@@ -225,70 +281,104 @@ export class OpenaiBot extends BotBase implements IBot {
                 rid,
                 new ConversationResponse({
                     conversation_id: this.botSession.session.botConversationId,
-                    parent_message_id: this.botSession.session.getParentMessageId(),
+                    parent_message_id:
+                        this.botSession.session.getParentMessageId(),
                     message_type: ResponseMessageType.ERROR,
                     error: requirementsErr
-                }
-                )
+                })
             );
 
             return;
         }
 
         if (openAiApi.requirementsData.arkose.required) {
-            await this.arkoseInstance.loadArkoseScript(openAiApi.requirementsData);
-            Logger.log('openAiApi.requirementsData', openAiApi.requirementsData);
+            await this.arkoseInstance.loadArkoseScript(
+                openAiApi.requirementsData
+            );
+            Logger.log(
+                "openAiApi.requirementsData",
+                openAiApi.requirementsData
+            );
         }
 
-        void openAiApi.conversation((message) => {
-            try {
-                cb(
-                    rid,
-                    {
-                        ...message,
+        void openAiApi.conversation(
+            (message) => {
+                try {
+                    cb(rid, {
+                        ...message
+                    });
+
+                    if (message?.message_text) {
+                        this.messageText = message.message_text;
                     }
-                );
 
-                if (message?.message_text) {
-                    this.messageText = message.message_text;
-                }
-
-                if (message?.message_id) {
-                    this.messageID = message.message_id;
-                }
-
-                if (message?.message_type === ResponseMessageType.DONE) {
-                    this.botSession.session.addMessage(new SimpleBotMessage(this.messageText, this.messageID));
-                }
-
-                if (message?.conversation_id) {
-                    this.botSession.session.setBotConversationId(message.conversation_id);
-                }
-            } catch (e) {
-                cb(rid, new ConversationResponse(
-                    {
-                        conversation_id: this.botSession.session.botConversationId,
-                        parent_message_id: this.botSession.session.getParentMessageId(),
-                        message_type: ResponseMessageType.ERROR,
-                        error: new ChatError(ErrorCode.UNKNOWN_ERROR, e.toString())
+                    if (message?.message_id) {
+                        this.messageID = message.message_id;
                     }
-                ));
-            }
-        }, prompt, this.botSession.session.getParentMessageId(), this.botSession.session.botConversationId, ref);
+
+                    if (message?.message_type === ResponseMessageType.DONE) {
+                        this.botSession.session.addMessage(
+                            new SimpleBotMessage(
+                                this.messageText,
+                                this.messageID
+                            )
+                        );
+                    }
+
+                    if (message?.conversation_id) {
+                        this.botSession.session.setBotConversationId(
+                            message.conversation_id
+                        );
+                    }
+                } catch (e) {
+                    cb(
+                        rid,
+                        new ConversationResponse({
+                            conversation_id:
+                                this.botSession.session.botConversationId,
+                            parent_message_id:
+                                this.botSession.session.getParentMessageId(),
+                            message_type: ResponseMessageType.ERROR,
+                            error: new ChatError(
+                                ErrorCode.UNKNOWN_ERROR,
+                                e.toString()
+                            )
+                        })
+                    );
+                }
+            },
+            prompt,
+            this.botSession.session.getParentMessageId(),
+            this.botSession.session.botConversationId,
+            ref
+        );
     }
 
     async startCaptcha(): Promise<boolean> {
-        const randomKey = '__window_key_' + Math.random() * 1000;
+        const randomKey = "__window_key_" + Math.random() * 1000;
         const openaiCaptchaValue = createUuid();
 
-        const url =
+        const url = appendParamToUrl(
             appendParamToUrl(
                 appendParamToUrl(
                     appendParamToUrl(
                         appendParamToUrl(
-                            appendParamToUrl(OpenaiBot.loginUrl, IS_OPEN_IN_CHAT_CAPTCHA_WINDOW, '1'),
-                            WINDOW_FOR_REMOVE_STORAGE_KEY, randomKey
-                        ), OpenaiBot.CAPTCHA_WINDOW_KEY, openaiCaptchaValue), R_SCP_PARAM, "1"), IS_OPEN_IN_PLUGIN, "1");
+                            OpenaiBot.loginUrl,
+                            IS_OPEN_IN_CHAT_CAPTCHA_WINDOW,
+                            "1"
+                        ),
+                        WINDOW_FOR_REMOVE_STORAGE_KEY,
+                        randomKey
+                    ),
+                    OpenaiBot.CAPTCHA_WINDOW_KEY,
+                    openaiCaptchaValue
+                ),
+                R_SCP_PARAM,
+                "1"
+            ),
+            IS_OPEN_IN_PLUGIN,
+            "1"
+        );
 
         //     appendParamToUrl(appendParamToUrl(
         //     appendParamToUrl(OpenaiBot.loginUrl, IS_OPEN_IN_CHAT_CAPTCHA_WINDOW, '1'),
@@ -315,8 +405,15 @@ export class OpenaiBot extends BotBase implements IBot {
 
         return new Promise((resolve) => {
             const listener = function (message: any) {
-                Logger.log('openaiCaptchaValue', openaiCaptchaValue, message.authKey);
-                if (message.action === MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS) {
+                Logger.log(
+                    "openaiCaptchaValue",
+                    openaiCaptchaValue,
+                    message.authKey
+                );
+                if (
+                    message.action ===
+                    MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS
+                ) {
                     if (message.authKey === openaiCaptchaValue) {
                         frame.destroy();
                         chrome.runtime.onMessage.removeListener(listener);
@@ -370,4 +467,3 @@ export class OpenaiBot extends BotBase implements IBot {
         return OpenaiBot.newModel;
     }
 }
-

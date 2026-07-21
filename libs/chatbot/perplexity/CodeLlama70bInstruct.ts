@@ -1,5 +1,8 @@
-import {PerplexityBot, PerplexitySession} from "~libs/chatbot/perplexity/PerplexityBase";
-import type {BotConstructorParams} from "~libs/chatbot/IBot";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import {
+    PerplexityBot,
+    PerplexitySession
+} from "~libs/chatbot/perplexity/PerplexityBase";
 
 class CodeLlama70BSessionSingleton {
     static model = "";
@@ -10,7 +13,10 @@ class CodeLlama70BSessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         CodeLlama70BSessionSingleton.model = model;
 
         if (CodeLlama70BSessionSingleton?.sessionInstance?.wsClosed) {
@@ -22,7 +28,8 @@ class CodeLlama70BSessionSingleton {
         }
 
         if (!CodeLlama70BSessionSingleton.sessionInstance) {
-            CodeLlama70BSessionSingleton.sessionInstance = new PerplexitySession(CodeLlama70BSessionSingleton.model);
+            CodeLlama70BSessionSingleton.sessionInstance =
+                new PerplexitySession(CodeLlama70BSessionSingleton.model);
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -37,14 +44,18 @@ class CodeLlama70BSessionSingleton {
 }
 
 export class CodeLlama70bInstruct extends PerplexityBot {
-    static botName = 'codellama-70b-instruct';
+    static botName = "codellama-70b-instruct";
     model = "codellama-70b-instruct";
-    static desc = 'Suitable for tasks including code completion, code generation, code optimization, and debugging.';
+    static desc =
+        "Suitable for tasks including code completion, code generation, code optimization, and debugging.";
     static maxTokenLimit = 16 * 1000;
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.perplexitySession = CodeLlama70BSessionSingleton.getInstance(params, this.model);
+        this.perplexitySession = CodeLlama70BSessionSingleton.getInstance(
+            params,
+            this.model
+        );
     }
 
     getBotName(): string {

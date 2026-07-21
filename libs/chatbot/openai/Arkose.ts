@@ -1,13 +1,21 @@
-import type {IChatRequirementsResponse} from "~libs/open-ai/open-ai-interface";
-import {Logger} from "~utils/logger";
+import type { IChatRequirementsResponse } from "~libs/open-ai/open-ai-interface";
+import { Logger } from "~utils/logger";
 
 export default class ArkoseGlobalSingleton {
     private static instance: ArkoseGlobalSingleton;
     myEnforcement: any;
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    arkosePromise: { resolve: Function; reject: Function} | undefined;
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    loadScriptPromise: { resolve: Function; reject: Function } | undefined;
+    arkosePromise:
+        | {
+              resolve: (value: unknown) => void;
+              reject: (reason?: unknown) => void;
+          }
+        | undefined;
+    loadScriptPromise:
+        | {
+              resolve: (value: unknown) => void;
+              reject: (reason?: unknown) => void;
+          }
+        | undefined;
     // for gpt4 only
     requirementsData?: IChatRequirementsResponse;
     arkoseScriptLoaded = false;
@@ -25,7 +33,7 @@ export default class ArkoseGlobalSingleton {
     }
 
     setupEnforcement(myEnforcement) {
-        Logger.log('load myEnforcement====', myEnforcement);
+        Logger.log("load myEnforcement====", myEnforcement);
         setTimeout(() => {
             this.loadScriptPromise?.resolve(true);
             this.loadScriptPromise = undefined;
@@ -66,14 +74,19 @@ export default class ArkoseGlobalSingleton {
         await this.waitLoadScript();
         // Append the Arkose JS tag to the Document Body. Reference https://github.com/ArkoseLabs/arkose-examples/blob/main/vue-example/src/components/Arkose.vue
         return new Promise((resolve, reject) => {
-            this.loadScriptPromise = {resolve, reject};
+            this.loadScriptPromise = { resolve, reject };
             if (!this.arkoseScriptLoaded) {
                 this.arkoseScriptLoaded = true;
                 const script = document.createElement("script");
-                script.src = chrome.runtime.getURL("/resources/js/v2/35536E1E-65B4-4D96-9D97-6ADB7EFF8147/api.js");
+                script.src = chrome.runtime.getURL(
+                    "/resources/js/v2/35536E1E-65B4-4D96-9D97-6ADB7EFF8147/api.js"
+                );
                 script.async = true;
                 script.defer = true;
-                const cbName = "useArkoseSetupEnforcement" + Math.floor(Math.random() * 900) + 100;
+                const cbName =
+                    "useArkoseSetupEnforcement" +
+                    Math.floor(Math.random() * 900) +
+                    100;
                 script.setAttribute("data-callback", cbName);
                 document.body.appendChild(script);
 
@@ -89,7 +102,10 @@ export default class ArkoseGlobalSingleton {
                     Logger.log("Could not load the Arkose API Script!");
                 };
             } else {
-                this.requirementsData && this.myEnforcement.setConfig({data: {blob: this.requirementsData.arkose.dx}});
+                this.requirementsData &&
+                    this.myEnforcement.setConfig({
+                        data: { blob: this.requirementsData.arkose.dx }
+                    });
                 this.loadScriptPromise.resolve(true);
                 this.loadScriptPromise = undefined;
             }
@@ -98,13 +114,13 @@ export default class ArkoseGlobalSingleton {
 
     private waitLoadScript() {
         return new Promise((resolve) => {
-            if(!this.loadScriptPromise) {
+            if (!this.loadScriptPromise) {
                 resolve(true);
                 return;
             }
 
             const id = setInterval(() => {
-                if(!this.loadScriptPromise) {
+                if (!this.loadScriptPromise) {
                     clearInterval(id);
                     resolve(true);
                 }
@@ -115,21 +131,21 @@ export default class ArkoseGlobalSingleton {
     private waitGetToken() {
         let n = 1;
         return new Promise((resolve) => {
-            if(!this.arkosePromise) {
+            if (!this.arkosePromise) {
                 resolve(true);
 
                 return;
             }
 
             const id = setInterval(() => {
-                if(n === 4) {
+                if (n === 4) {
                     clearInterval(id);
                     this.arkosePromise?.reject("timeout");
                     this.arkosePromise = undefined;
                     resolve(true);
                 }
 
-                if(!this.arkosePromise) {
+                if (!this.arkosePromise) {
                     clearInterval(id);
                     resolve(true);
                 }
@@ -149,11 +165,10 @@ export default class ArkoseGlobalSingleton {
             });
 
             return new Promise((resolve, reject) => {
-                this.arkosePromise = {resolve, reject};
+                this.arkosePromise = { resolve, reject };
                 this.myEnforcement.run();
             });
         }
         return null;
-
     }
 }

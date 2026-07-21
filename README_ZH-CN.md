@@ -12,14 +12,13 @@
 </p>
 </div>
 
-
 <br>
 
 ## 简介
 
 🧠BrainyAI 是一个完全免费的 Chrome 浏览器扩展程序。用户只需一次登录到各种 AI 网站，然后他们就可以使用 BrainyAI 将大型模型的能力带入他们的日常工作和生活场景。通过便捷的侧边栏，BrainyAI 提供了 AI 聊天聚合、AI 搜索、AI 阅读和增强的 AI 网页浏览等功能。
 
-使用 BrainyAI 时，用户无需离开当前网页。他们可以利用像 GPT-4、GPT-4o、Claude、Gemini、Moonshot 和 LLaMA3 这样的高级大型语言模型，执行对话、搜索、网页摘要和文件阅读等任务——完全免费。BrainyAI 是类似产品如  **[Sider AI](https://sider.ai)**, **[Monica](https://monica.im)**, **[Merlin](https://www.getmerlin.in)**, 和 **[MaxAI](https:///www.maxai.me)** 的免费替代品。🌐
+使用 BrainyAI 时，用户无需离开当前网页。他们可以利用像 GPT-4、GPT-4o、Claude、Gemini、Moonshot 和 LLaMA3 这样的高级大型语言模型，执行对话、搜索、网页摘要和文件阅读等任务——完全免费。BrainyAI 是类似产品如 **[Sider AI](https://sider.ai)**, **[Monica](https://monica.im)**, **[Merlin](https://www.getmerlin.in)**, 和 **[MaxAI](https:///www.maxai.me)** 的免费替代品。🌐
 <br>
 
 ## 主要特性
@@ -31,19 +30,19 @@
 
 <br>
 
-| 特性                | 截图                                                                                                 | 
-|-------------------|----------------------------------------------------------------------------------------------------| 
-| 同时向多个模型提问         | ![20240614-190440](https://raw.githubusercontent.com/luyu0279/BrainyAi/main/misc/group_chat.gif)   | 
-| 从多个顶级 AI 搜索引擎获取答案 | ![20240614-191334](https://raw.githubusercontent.com/luyu0279/BrainyAi/main/misc/multi_answer.gif) | 
-| 网页/YouTube 摘要     | ![20240614-191334](https://raw.githubusercontent.com/luyu0279/BrainyAi/main/misc/summaries.gif)    | 
+| 特性                           | 截图                                                                                               |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 同时向多个模型提问             | ![20240614-190440](https://raw.githubusercontent.com/luyu0279/BrainyAi/main/misc/group_chat.gif)   |
+| 从多个顶级 AI 搜索引擎获取答案 | ![20240614-191334](https://raw.githubusercontent.com/luyu0279/BrainyAi/main/misc/multi_answer.gif) |
+| 网页/YouTube 摘要              | ![20240614-191334](https://raw.githubusercontent.com/luyu0279/BrainyAi/main/misc/summaries.gif)    |
 
 <br>
 <br>
 
 ## 支持的 LLMs
 
-| LLMs           | Provider              | status |
-|----------------|-----------------------|--------|
+| LLMs           | Provider              | status   |
+| -------------- | --------------------- | -------- |
 | Gpt3.5         | chatgpt.com           | 支持     |
 | Gpt4           | chatgpt.com           | 支持     |
 | Gpt4o          | chatgpt.com           | 支持     |
@@ -55,8 +54,7 @@
 | Gemma-7b       | perplexity.ai         | 支持     |
 | llava-v1.6     | perplexity.ai         | 支持     |
 | Mistral-8×22b  | perplexity.ai         | 支持     |
-| Claude 3       | claude.ai             | 即将推出   |
-
+| Claude 3       | claude.ai             | 即将推出 |
 
 More is coming.
 
@@ -76,6 +74,7 @@ More is coming.
 为了增强您的 BrainyAI 体验，我们使用 GA4 匿名收集使用数据，这有助于我们了解用户偏好并优化我们的产品。这些数据包括：
 
 AI 机器人提示的频率和持续时间（不收集提示内容）
+
 - 响应长度和使用模式（不收集响应内容）
 - 这些匿名使用数据对于持续改进至关重要，并且不会透露任何可识别个人身份的信息。
 
@@ -99,6 +98,7 @@ pnpm install
 ```
 
 然后，启动开发服务器：
+
 ```bash
 pnpm dev
 ```

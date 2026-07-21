@@ -1,4 +1,4 @@
-import {BotSession} from "~libs/chatbot/BotSessionBase";
+import { BotSession } from "~libs/chatbot/BotSessionBase";
 
 export default class CopilotSessionSingleton {
     private static instance: CopilotSessionSingleton | undefined;
@@ -6,7 +6,9 @@ export default class CopilotSessionSingleton {
     session: BotSession;
 
     private constructor() {
-        this.session = new BotSession(CopilotSessionSingleton.globalConversationId);
+        this.session = new BotSession(
+            CopilotSessionSingleton.globalConversationId
+        );
     }
 
     static destroy() {
@@ -15,7 +17,10 @@ export default class CopilotSessionSingleton {
     }
 
     static getInstance(globalConversationId: string) {
-        if (globalConversationId !== CopilotSessionSingleton.globalConversationId) {
+        if (
+            globalConversationId !==
+            CopilotSessionSingleton.globalConversationId
+        ) {
             CopilotSessionSingleton.destroy();
         }
 

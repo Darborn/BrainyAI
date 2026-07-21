@@ -2,9 +2,22 @@ const cacheMap = new Map<string, string>();
 
 let workerInstance: Worker | null = null;
 
-function getUserConfiguration(): [number, string, number, number, string, string, string, string, string, number] {
+function getUserConfiguration(): [
+    number,
+    string,
+    number,
+    number,
+    string,
+    string,
+    string,
+    string,
+    string,
+    number
+] {
     return [
-        navigator.hardwareConcurrency + window.screen.width + window.screen.height,
+        navigator.hardwareConcurrency +
+            window.screen.width +
+            window.screen.height,
         new Date().toString(),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
@@ -23,7 +36,10 @@ function createWorker(): Worker {
     return new Worker(chrome.runtime.getURL("/resources/js/worker.js"));
 }
 
-async function getComputationResult(seed: string, difficulty: string): Promise<any> {
+async function getComputationResult(
+    seed: string,
+    difficulty: string
+): Promise<any> {
     if (!workerInstance) {
         workerInstance = createWorker();
     }
@@ -58,5 +74,5 @@ export async function fetchAndCacheResult(seed: string): Promise<string> {
         const result = await getComputationResult(seed, "0");
         cacheMap.set(seed, result);
     }
-    return "gAAAAAC" + cacheMap.get(seed) as string;
+    return ("gAAAAAC" + cacheMap.get(seed)) as string;
 }

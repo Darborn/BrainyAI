@@ -1,5 +1,8 @@
-import {PerplexityBot, PerplexitySession} from "~libs/chatbot/perplexity/PerplexityBase";
-import type {BotConstructorParams} from "~libs/chatbot/IBot";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import {
+    PerplexityBot,
+    PerplexitySession
+} from "~libs/chatbot/perplexity/PerplexityBase";
 
 class Mistral822bSessionSingleton {
     static model = "";
@@ -10,7 +13,10 @@ class Mistral822bSessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         Mistral822bSessionSingleton.model = model;
 
         if (Mistral822bSessionSingleton?.sessionInstance?.wsClosed) {
@@ -22,7 +28,9 @@ class Mistral822bSessionSingleton {
         }
 
         if (!Mistral822bSessionSingleton.sessionInstance) {
-            Mistral822bSessionSingleton.sessionInstance = new PerplexitySession(Mistral822bSessionSingleton.model);
+            Mistral822bSessionSingleton.sessionInstance = new PerplexitySession(
+                Mistral822bSessionSingleton.model
+            );
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -37,14 +45,18 @@ class Mistral822bSessionSingleton {
 }
 
 export class Mistral822b extends PerplexityBot {
-    static botName = 'mistral-8×22b';
+    static botName = "mistral-8×22b";
     model = "mixtral-8x22b-instruct";
-    static desc = 'Suitable for natural language processing tasks, including chatbots, content generation, and more complex tasks that require a deeper understanding of language.';
+    static desc =
+        "Suitable for natural language processing tasks, including chatbots, content generation, and more complex tasks that require a deeper understanding of language.";
     static maxTokenLimit = 16 * 1000;
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.perplexitySession = Mistral822bSessionSingleton.getInstance(params, this.model);
+        this.perplexitySession = Mistral822bSessionSingleton.getInstance(
+            params,
+            this.model
+        );
     }
 
     getBotName(): string {

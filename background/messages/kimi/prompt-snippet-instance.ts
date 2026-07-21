@@ -1,7 +1,8 @@
-import type {PlasmoMessaging} from "@plasmohq/messaging";
-import {customChatFetch} from "~utils/custom-fetch-for-chat";
-import {ChatError, ErrorCode} from "~utils/errors";
-import {KimiBot} from "~libs/chatbot/kimi";
+import type { PlasmoMessaging } from "@plasmohq/messaging";
+
+import { KimiBot } from "~libs/chatbot/kimi";
+import { customChatFetch } from "~utils/custom-fetch-for-chat";
+import { ChatError, ErrorCode } from "~utils/errors";
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     const myHeaders = new Headers();
@@ -13,26 +14,29 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     myHeaders.append("referer", "https://kimi.moonshot.cn/");
     myHeaders.append("Origin", "https://kimi.moonshot.cn");
     // myHeaders.append("x-traffic-id", "7351723399195934466");
-    const accessToken =  await KimiBot.getAccessToken();
+    const accessToken = await KimiBot.getAccessToken();
 
-    if(accessToken) {
+    if (accessToken) {
         myHeaders.append("Authorization", `Bearer ${accessToken}`);
     }
 
     const raw = JSON.stringify({
-        "offset": 0,
-        "size": 10,
-        "query": " "
+        offset: 0,
+        size: 10,
+        query: " "
     });
 
-    const r = await customChatFetch("https://kimi.moonshot.cn/api/prompt-snippet/instance",  {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow"
-    });
+    const r = await customChatFetch(
+        "https://kimi.moonshot.cn/api/prompt-snippet/instance",
+        {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow"
+        }
+    );
 
-    if(r.error) {
+    if (r.error) {
         return res.send([r.error, null]);
     }
 

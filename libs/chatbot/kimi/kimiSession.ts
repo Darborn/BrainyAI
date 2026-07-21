@@ -1,4 +1,4 @@
-import  {BotSession} from "~libs/chatbot/BotSessionBase";
+import { BotSession } from "~libs/chatbot/BotSessionBase";
 
 export default class KimiSessionSingleton {
     private static instance: KimiSessionSingleton | null;
@@ -6,7 +6,9 @@ export default class KimiSessionSingleton {
     session: BotSession;
 
     private constructor() {
-        this.session = new BotSession(KimiSessionSingleton.globalConversationId);
+        this.session = new BotSession(
+            KimiSessionSingleton.globalConversationId
+        );
     }
 
     static destroy() {
@@ -15,7 +17,9 @@ export default class KimiSessionSingleton {
     }
 
     static getInstance(globalConversationId: string) {
-        if (globalConversationId !== KimiSessionSingleton.globalConversationId) {
+        if (
+            globalConversationId !== KimiSessionSingleton.globalConversationId
+        ) {
             KimiSessionSingleton.destroy();
         }
 

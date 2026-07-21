@@ -1,11 +1,17 @@
-import {OpenaiBot} from "~libs/chatbot/openai/index";
-import {OpenAIAuth} from "~libs/open-ai/open-ai-auth";
-import {BotSession} from "~libs/chatbot/BotSessionBase";
-import type {BotCompletionParams, BotConstructorParams} from "~libs/chatbot/IBot";
-import {ConversationResponse, ResponseMessageType} from "~libs/open-ai/open-ai-interface";
-import {ChatError, ErrorCode} from "~utils/errors";
-import {Logger} from "~utils/logger";
-import {BotSupportedMimeType} from "~libs/chatbot/BotBase";
+import { BotSupportedMimeType } from "~libs/chatbot/BotBase";
+import { BotSession } from "~libs/chatbot/BotSessionBase";
+import type {
+    BotCompletionParams,
+    BotConstructorParams
+} from "~libs/chatbot/IBot";
+import { OpenaiBot } from "~libs/chatbot/openai/index";
+import { OpenAIAuth } from "~libs/open-ai/open-ai-auth";
+import {
+    ConversationResponse,
+    ResponseMessageType
+} from "~libs/open-ai/open-ai-interface";
+import { ChatError, ErrorCode } from "~utils/errors";
+import { Logger } from "~utils/logger";
 
 class ChatGPT4OAuthSingleton {
     private static instance: ChatGPT4OAuthSingleton;
@@ -31,7 +37,9 @@ class ChatGPT4OSessionSingleton {
     session: BotSession;
 
     private constructor() {
-        this.session = new BotSession(ChatGPT4OSessionSingleton.globalConversationId);
+        this.session = new BotSession(
+            ChatGPT4OSessionSingleton.globalConversationId
+        );
     }
 
     static destroy() {
@@ -40,14 +48,18 @@ class ChatGPT4OSessionSingleton {
     }
 
     static getInstance(globalConversationId: string) {
-        if (globalConversationId !== ChatGPT4OSessionSingleton.globalConversationId) {
+        if (
+            globalConversationId !==
+            ChatGPT4OSessionSingleton.globalConversationId
+        ) {
             ChatGPT4OSessionSingleton.destroy();
         }
 
         ChatGPT4OSessionSingleton.globalConversationId = globalConversationId;
 
         if (!ChatGPT4OSessionSingleton.instance) {
-            ChatGPT4OSessionSingleton.instance = new ChatGPT4OSessionSingleton();
+            ChatGPT4OSessionSingleton.instance =
+                new ChatGPT4OSessionSingleton();
         }
 
         return ChatGPT4OSessionSingleton.instance;
@@ -57,49 +69,68 @@ class ChatGPT4OSessionSingleton {
 const modelSlug = "gpt-4o";
 
 export default class ChatGPT4O extends OpenaiBot {
-    static botName = 'GPT-4o';
+    static botName = "GPT-4o";
     model = modelSlug;
     static requireLogin = true;
     static maxTokenLimit = 32 * 1000;
-    static desc = 'Suitable for complex problem-solving and visual content analysis.';
+    static desc =
+        "Suitable for complex problem-solving and visual content analysis.";
     supportedUploadTypes = [BotSupportedMimeType.ANY];
 
     static async checkModelCanUse() {
         const modelInfo = await this.modelInfo.getModelInfo();
         Logger.log("modelInfo", modelInfo);
-        if(!modelInfo) return false;
+        if (!modelInfo) return false;
 
-        return modelInfo.models.map(item => item.slug).includes(modelSlug) ?? false;
+        return (
+            modelInfo.models.map((item) => item.slug).includes(modelSlug) ??
+            false
+        );
     }
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.botSession = ChatGPT4OSessionSingleton.getInstance(params.globalConversationId);
+        this.botSession = ChatGPT4OSessionSingleton.getInstance(
+            params.globalConversationId
+        );
         this.authInstance = ChatGPT4OAuthSingleton.getInstance();
     }
 
-    async completion({prompt, rid, cb, fileRef}: BotCompletionParams): Promise<void> {
+    async completion({
+        prompt,
+        rid,
+        cb,
+        fileRef
+    }: BotCompletionParams): Promise<void> {
         const [checkErr, isLogin] = await ChatGPT4O.checkIsLogin();
 
-        if(checkErr || !isLogin) {
-            return cb(rid, new ConversationResponse({
-                conversation_id: this.botSession.session.botConversationId,
-                parent_message_id: this.botSession.session.getParentMessageId(),
-                message_type: ResponseMessageType.ERROR,
-                error: checkErr ?? new ChatError(ErrorCode.UNAUTHORIZED)
-            }));
+        if (checkErr || !isLogin) {
+            return cb(
+                rid,
+                new ConversationResponse({
+                    conversation_id: this.botSession.session.botConversationId,
+                    parent_message_id:
+                        this.botSession.session.getParentMessageId(),
+                    message_type: ResponseMessageType.ERROR,
+                    error: checkErr ?? new ChatError(ErrorCode.UNAUTHORIZED)
+                })
+            );
         }
 
-        if(!await ChatGPT4O.checkModelCanUse()) {
-            return cb(rid, new ConversationResponse({
-                conversation_id: this.botSession.session.botConversationId,
-                parent_message_id: this.botSession.session.getParentMessageId(),
-                message_type: ResponseMessageType.ERROR,
-                error: new ChatError(ErrorCode.MODEL_NO_PERMISSION)
-            }));
+        if (!(await ChatGPT4O.checkModelCanUse())) {
+            return cb(
+                rid,
+                new ConversationResponse({
+                    conversation_id: this.botSession.session.botConversationId,
+                    parent_message_id:
+                        this.botSession.session.getParentMessageId(),
+                    message_type: ResponseMessageType.ERROR,
+                    error: new ChatError(ErrorCode.MODEL_NO_PERMISSION)
+                })
+            );
         }
 
-        return super.completion({prompt, rid, cb, fileRef});
+        return super.completion({ prompt, rid, cb, fileRef });
     }
 
     getBotName(): string {

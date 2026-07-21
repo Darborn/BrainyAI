@@ -1,16 +1,22 @@
-import {useEffect} from "react";
+import { useEffect } from "react";
+
+import { sendToBackground } from "@plasmohq/messaging";
+import { Storage } from "@plasmohq/storage";
+
+import type { SiteName } from "~provider/sidepanel/SidePanelProvider";
 import {
     MESSAGE_ACTION_RELOAD_SITE_FRAME,
     WINDOW_FOR_REMOVE_STORAGE_KEY
 } from "~utils";
-import {sendToBackground} from "@plasmohq/messaging";
-import {Storage} from "@plasmohq/storage";
-import type {SiteName} from "~provider/sidepanel/SidePanelProvider";
 
-export default function CInStandaloneWindowChallenge({verifySuccessValidator, siteName, checkInterval}: {
-    verifySuccessValidator(): boolean,
-    siteName?: SiteName,
-    checkInterval?: number
+export default function CInStandaloneWindowChallenge({
+    verifySuccessValidator,
+    siteName,
+    checkInterval
+}: {
+    verifySuccessValidator(): boolean;
+    siteName?: SiteName;
+    checkInterval?: number;
 }) {
     useEffect(() => {
         const storage = new Storage();
@@ -18,14 +24,17 @@ export default function CInStandaloneWindowChallenge({verifySuccessValidator, si
             if (verifySuccessValidator()) {
                 clearInterval(interval);
 
-                if(siteName) {
+                if (siteName) {
                     void chrome.runtime.sendMessage(chrome.runtime.id, {
                         action: MESSAGE_ACTION_RELOAD_SITE_FRAME,
                         siteName
                     });
                 }
 
-                const windowKey: string = new URLSearchParams(location.search).get(WINDOW_FOR_REMOVE_STORAGE_KEY) ?? '';
+                const windowKey: string =
+                    new URLSearchParams(location.search).get(
+                        WINDOW_FOR_REMOVE_STORAGE_KEY
+                    ) ?? "";
 
                 storage.get(windowKey).then((windowId: any) => {
                     if (windowId) {
@@ -33,7 +42,7 @@ export default function CInStandaloneWindowChallenge({verifySuccessValidator, si
                             name: "close-window",
                             body: {
                                 windowId
-                            },
+                            }
                         });
                     }
                 });

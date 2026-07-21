@@ -1,9 +1,12 @@
-import {OpenaiBot} from "~libs/chatbot/openai/index";
-import {OpenAIAuth} from "~libs/open-ai/open-ai-auth";
-import {BotSession} from "~libs/chatbot/BotSessionBase";
-import type { BotConstructorParams} from "~libs/chatbot/IBot";
-import {Logger} from "~utils/logger";
-import {checkModelSupportUploadImage, checkModelSupportUploadPDF} from "~libs/chatbot/utils";
+import { BotSession } from "~libs/chatbot/BotSessionBase";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import { OpenaiBot } from "~libs/chatbot/openai/index";
+import {
+    checkModelSupportUploadImage,
+    checkModelSupportUploadPDF
+} from "~libs/chatbot/utils";
+import { OpenAIAuth } from "~libs/open-ai/open-ai-auth";
+import { Logger } from "~utils/logger";
 
 class ChatGPT35TurboAuthSingleton {
     private static instance: ChatGPT35TurboAuthSingleton;
@@ -15,7 +18,8 @@ class ChatGPT35TurboAuthSingleton {
 
     static getInstance(): ChatGPT35TurboAuthSingleton {
         if (!ChatGPT35TurboAuthSingleton.instance) {
-            ChatGPT35TurboAuthSingleton.instance = new ChatGPT35TurboAuthSingleton();
+            ChatGPT35TurboAuthSingleton.instance =
+                new ChatGPT35TurboAuthSingleton();
             ChatGPT35TurboAuthSingleton.instance.auth = new OpenAIAuth();
         }
 
@@ -29,7 +33,9 @@ class ChatGPT35TurboSessionSingleton {
     session: BotSession;
 
     private constructor() {
-        this.session = new BotSession(ChatGPT35TurboSessionSingleton.globalConversationId);
+        this.session = new BotSession(
+            ChatGPT35TurboSessionSingleton.globalConversationId
+        );
     }
 
     static destroy() {
@@ -38,14 +44,19 @@ class ChatGPT35TurboSessionSingleton {
     }
 
     static getInstance(globalConversationId: string) {
-        if (globalConversationId !== ChatGPT35TurboSessionSingleton.globalConversationId) {
+        if (
+            globalConversationId !==
+            ChatGPT35TurboSessionSingleton.globalConversationId
+        ) {
             ChatGPT35TurboSessionSingleton.destroy();
         }
 
-        ChatGPT35TurboSessionSingleton.globalConversationId = globalConversationId;
+        ChatGPT35TurboSessionSingleton.globalConversationId =
+            globalConversationId;
 
         if (!ChatGPT35TurboSessionSingleton.instance) {
-            ChatGPT35TurboSessionSingleton.instance = new ChatGPT35TurboSessionSingleton();
+            ChatGPT35TurboSessionSingleton.instance =
+                new ChatGPT35TurboSessionSingleton();
         }
 
         return ChatGPT35TurboSessionSingleton.instance;
@@ -55,23 +66,28 @@ class ChatGPT35TurboSessionSingleton {
 const modelSlug = "text-davinci-002-render-sha";
 
 export default class ChatGPT35Turbo extends OpenaiBot {
-    static botName = 'GPT-3.5-turbo';
+    static botName = "GPT-3.5-turbo";
     model = modelSlug;
     static requireLogin = false;
-    static desc = 'Suitable for general dialogue and basic text generation.';
+    static desc = "Suitable for general dialogue and basic text generation.";
     supportedUploadTypes = [];
 
     static async checkModelCanUse() {
         const modelInfo = await this.modelInfo.getModelInfo();
         Logger.trace("modelInfo", modelInfo);
-        if(!modelInfo) return false;
+        if (!modelInfo) return false;
 
-        return modelInfo.models.map(item => item.slug).includes(modelSlug) ?? false;
+        return (
+            modelInfo.models.map((item) => item.slug).includes(modelSlug) ??
+            false
+        );
     }
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.botSession = ChatGPT35TurboSessionSingleton.getInstance(params.globalConversationId);
+        this.botSession = ChatGPT35TurboSessionSingleton.getInstance(
+            params.globalConversationId
+        );
         this.authInstance = ChatGPT35TurboAuthSingleton.getInstance();
     }
 
@@ -92,7 +108,6 @@ export default class ChatGPT35Turbo extends OpenaiBot {
     }
 
     uploadFile(file: File): Promise<string> {
-
         return this.fileInstance.uploadFile(file, this.supportedUploadTypes);
     }
 }

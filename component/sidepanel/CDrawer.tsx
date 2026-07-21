@@ -1,9 +1,9 @@
-import {useState} from "react";
-import { type DrawerProps,  Button, Space, Drawer} from "antd";
+import { Button, Drawer, Space, type DrawerProps } from "antd";
+import { useState } from "react";
 
 export default function () {
     const [open, setOpen] = useState(true);
-    const [placement] = useState<DrawerProps['placement']>('right');
+    const [placement] = useState<DrawerProps["placement"]>("right");
 
     // const showDrawer = () => {
     //     setOpen(true);
@@ -32,8 +32,7 @@ export default function () {
                             OK
                         </Button>
                     </Space>
-                }
-            >
+                }>
                 <p>Some contents...</p>
                 <p>Some contents...</p>
                 <p>Some contents...</p>

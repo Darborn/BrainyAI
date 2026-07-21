@@ -1,5 +1,8 @@
-import {PerplexityBot, PerplexitySession} from "~libs/chatbot/perplexity/PerplexityBase";
-import type {BotConstructorParams} from "~libs/chatbot/IBot";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import {
+    PerplexityBot,
+    PerplexitySession
+} from "~libs/chatbot/perplexity/PerplexityBase";
 
 class Claude3HaikuSessionSingleton {
     static model = "";
@@ -10,7 +13,10 @@ class Claude3HaikuSessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         Claude3HaikuSessionSingleton.model = model;
 
         if (Claude3HaikuSessionSingleton?.sessionInstance?.wsClosed) {
@@ -22,7 +28,8 @@ class Claude3HaikuSessionSingleton {
         }
 
         if (!Claude3HaikuSessionSingleton.sessionInstance) {
-            Claude3HaikuSessionSingleton.sessionInstance = new PerplexitySession(Claude3HaikuSessionSingleton.model);
+            Claude3HaikuSessionSingleton.sessionInstance =
+                new PerplexitySession(Claude3HaikuSessionSingleton.model);
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -39,12 +46,16 @@ class Claude3HaikuSessionSingleton {
 export class Claude3Haiku extends PerplexityBot {
     model = "claude-3-haiku-20240307";
     static botName = "claude-3-haiku";
-    static desc = 'Suitable for swiftly answering simple questions, such as customer interactions and content';
+    static desc =
+        "Suitable for swiftly answering simple questions, such as customer interactions and content";
     static maxTokenLimit = 8 * 1000;
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.perplexitySession = Claude3HaikuSessionSingleton.getInstance(params, this.model);
+        this.perplexitySession = Claude3HaikuSessionSingleton.getInstance(
+            params,
+            this.model
+        );
     }
 
     getBotName(): string {

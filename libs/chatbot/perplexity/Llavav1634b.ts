@@ -1,5 +1,8 @@
-import {PerplexityBot, PerplexitySession} from "~libs/chatbot/perplexity/PerplexityBase";
-import type {BotConstructorParams} from "~libs/chatbot/IBot";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import {
+    PerplexityBot,
+    PerplexitySession
+} from "~libs/chatbot/perplexity/PerplexityBase";
 
 class Llavav1634bSessionSingleton {
     static model = "";
@@ -10,7 +13,10 @@ class Llavav1634bSessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         Llavav1634bSessionSingleton.model = model;
 
         if (Llavav1634bSessionSingleton?.sessionInstance?.wsClosed) {
@@ -22,7 +28,9 @@ class Llavav1634bSessionSingleton {
         }
 
         if (!Llavav1634bSessionSingleton.sessionInstance) {
-            Llavav1634bSessionSingleton.sessionInstance = new PerplexitySession(Llavav1634bSessionSingleton.model);
+            Llavav1634bSessionSingleton.sessionInstance = new PerplexitySession(
+                Llavav1634bSessionSingleton.model
+            );
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -36,16 +44,19 @@ class Llavav1634bSessionSingleton {
     }
 }
 
-
 export class Llavav1634b extends PerplexityBot {
-    static botName = 'llava-v1.6-34b';
+    static botName = "llava-v1.6-34b";
     model = "llava-v1.6-34b";
-    static desc = 'Suitable for tasks like visual question answering, image captioning, OCR and engaging in natural visual conversations.';
+    static desc =
+        "Suitable for tasks like visual question answering, image captioning, OCR and engaging in natural visual conversations.";
     static maxTokenLimit = 8 * 1000;
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.perplexitySession = Llavav1634bSessionSingleton.getInstance(params, this.model);
+        this.perplexitySession = Llavav1634bSessionSingleton.getInstance(
+            params,
+            this.model
+        );
     }
 
     getBotName(): string {

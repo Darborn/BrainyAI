@@ -1,24 +1,31 @@
-import {ConversationResponse} from "~libs/open-ai/open-ai-interface";
+import { ConversationResponse } from "~libs/open-ai/open-ai-interface";
 
-export type BotBaseCompletion = (prompt: string, rid: string, cb: ConversationResponseCb) => Promise<void>
-export type ConversationResponseCb = (rid: string, m: ConversationResponse) => void;
+export type BotBaseCompletion = (
+    prompt: string,
+    rid: string,
+    cb: ConversationResponseCb
+) => Promise<void>;
+export type ConversationResponseCb = (
+    rid: string,
+    m: ConversationResponse
+) => void;
 
 export interface BotConstructorParams {
-    globalConversationId: string
-    parentMessageId?: string
+    globalConversationId: string;
+    parentMessageId?: string;
 }
 
 export interface BotCompletionParams {
-    prompt: string
-    rid: string
-    cb: ConversationResponseCb,
-    fileRef?: string,
-    file?: File
-    forceRefresh?: boolean
+    prompt: string;
+    rid: string;
+    cb: ConversationResponseCb;
+    fileRef?: string;
+    file?: File;
+    forceRefresh?: boolean;
 }
 
 export interface IBot {
-    conversationId: string
+    conversationId: string;
     // parentMessageId: string
     // fileInstance: BotFileInstance<any>
     // botSession: IBotSessionSingleton

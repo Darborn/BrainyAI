@@ -1,10 +1,15 @@
-import {type BotFileInstance, BotSupportedMimeType, FileRef} from "~libs/chatbot/BotBase";
-import {ChatError, ErrorCode} from "~utils/errors";
-import {sendToBackground} from "@plasmohq/messaging";
-import {customChatFetch} from "~utils/custom-fetch-for-chat";
-import {Logger} from "~utils/logger";
-import {createUuid} from "~utils";
-import {KimiBot} from "~libs/chatbot/kimi/index";
+import { sendToBackground } from "@plasmohq/messaging";
+
+import {
+    BotSupportedMimeType,
+    FileRef,
+    type BotFileInstance
+} from "~libs/chatbot/BotBase";
+import { KimiBot } from "~libs/chatbot/kimi/index";
+import { createUuid } from "~utils";
+import { customChatFetch } from "~utils/custom-fetch-for-chat";
+import { ChatError, ErrorCode } from "~utils/errors";
+import { Logger } from "~utils/logger";
 
 interface FileInfo {
     id: string;
@@ -43,7 +48,7 @@ interface KimiFilePreSignResponse {
     object_name: string;
 }
 
-export const KimiSupportedMimeTypes =  [
+export const KimiSupportedMimeTypes = [
     "image/jpeg", // JPEG
     "image/png", // PNG
     "image/gif", // GIF
@@ -84,7 +89,7 @@ export const KimiSupportedMimeTypes =  [
 
 export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
     private static instance: KimiFileSingleton;
-    refs = {} as BotFileInstance<LinkFileResponse>['refs'];
+    refs = {} as BotFileInstance<LinkFileResponse>["refs"];
     tempRefKey: string;
 
     private constructor() {
@@ -113,7 +118,9 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         return null;
     }
 
-    private async _getSignUrl(file: File): Promise<[ChatError, KimiFilePreSignResponse]> {
+    private async _getSignUrl(
+        file: File
+    ): Promise<[ChatError, KimiFilePreSignResponse]> {
         const [err, res] = await sendToBackground({
             name: "kimi/pre-sign-url",
             body: {
@@ -124,12 +131,14 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         return [err, res];
     }
 
-    private async preSignUploadUrl(file: File): Promise<[ChatError, KimiFilePreSignResponse | null]> {
+    private async preSignUploadUrl(
+        file: File
+    ): Promise<[ChatError, KimiFilePreSignResponse | null]> {
         const [err, res] = await this._getSignUrl(file);
 
         if (err && err.code === ErrorCode.UNAUTHORIZED) {
             const [refreshErr] = await sendToBackground({
-                name: "kimi/refresh-access-token",
+                name: "kimi/refresh-access-token"
             });
 
             if (refreshErr) {
@@ -157,29 +166,30 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         }
 
         const raw = JSON.stringify({
-            "ids": [
-                id
-            ]
+            ids: [id]
         });
 
-        const request = await customChatFetch("https://kimi.moonshot.cn/api/file/parse_process", {
-            method: "POST",
-            headers: myHeaders,
-            body: raw,
-            redirect: "follow"
-        });
+        const request = await customChatFetch(
+            "https://kimi.moonshot.cn/api/file/parse_process",
+            {
+                method: "POST",
+                headers: myHeaders,
+                body: raw,
+                redirect: "follow"
+            }
+        );
 
-        if(request.error) {
+        if (request.error) {
             return [request.error];
         }
 
-        Logger.log('request', request);
+        Logger.log("request", request);
         const stream = request?.response?.body;
         const reader = stream?.getReader();
 
         return new Promise((resolve) => {
             function readStream() {
-                reader?.read().then(async ({done, value}) => {
+                reader?.read().then(async ({ done, value }) => {
                     if (done) {
                         return;
                     }
@@ -188,13 +198,15 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
                     const str = enc.decode(value.buffer);
 
                     for (const line of str.split("\n")) {
-                        const raw = line.replace("data: ", "").replace("\n", "");
+                        const raw = line
+                            .replace("data: ", "")
+                            .replace("\n", "");
 
                         try {
                             const data = JSON.parse(raw) as FileProcessRes;
-                            Logger.log('data', data);
+                            Logger.log("data", data);
 
-                            if(data.status === "failed") {
+                            if (data.status === "failed") {
                                 resolve([new ChatError(ErrorCode.FILE_OTHER)]);
 
                                 return;
@@ -213,7 +225,10 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         });
     }
 
-    private async upload(file: File, uploadUrl: string): Promise<ChatError | null> {
+    private async upload(
+        file: File,
+        uploadUrl: string
+    ): Promise<ChatError | null> {
         const theHeaders = new Headers();
         theHeaders.append("accept", "*/*");
         theHeaders.append("content-type", file.type);
@@ -226,7 +241,7 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         const r = await customChatFetch(uploadUrl, {
             method: "PUT",
             headers: theHeaders,
-            body: file,
+            body: file
         });
 
         if (r.error) {
@@ -243,7 +258,10 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         // }
     }
 
-    private async linkFile(fileName: string, objectName: string): Promise<[ChatError | null, LinkFileResponse | null]> {
+    private async linkFile(
+        fileName: string,
+        objectName: string
+    ): Promise<[ChatError | null, LinkFileResponse | null]> {
         const myHeaders = new Headers();
         myHeaders.append("content-type", "application/json");
         //TODO
@@ -257,17 +275,20 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         }
 
         const raw = JSON.stringify({
-            "type": "file",
-            "name": fileName,
-            "object_name": objectName
+            type: "file",
+            name: fileName,
+            object_name: objectName
         });
 
-        const request = await customChatFetch("https://kimi.moonshot.cn/api/file", {
-            method: "POST",
-            headers: myHeaders,
-            body: raw,
-            redirect: "follow"
-        });
+        const request = await customChatFetch(
+            "https://kimi.moonshot.cn/api/file",
+            {
+                method: "POST",
+                headers: myHeaders,
+                body: raw,
+                redirect: "follow"
+            }
+        );
 
         if (request.error) {
             return [request.error, null];
@@ -281,45 +302,69 @@ export class KimiFileSingleton implements BotFileInstance<LinkFileResponse> {
         }
     }
 
-    async uploadFile(file: File, supportedTypes: BotSupportedMimeType[]): Promise<string> {
+    async uploadFile(
+        file: File,
+        supportedTypes: BotSupportedMimeType[]
+    ): Promise<string> {
         this.tempRefKey = createUuid();
 
         Logger.log("file.type", file.type, supportedTypes);
 
-        if (file.type && !supportedTypes.includes(file.type as BotSupportedMimeType)) {
-            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(new ChatError(ErrorCode.UPLOAD_FILE_NOT_SUPPORTED), null);
+        if (
+            file.type &&
+            !supportedTypes.includes(file.type as BotSupportedMimeType)
+        ) {
+            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(
+                new ChatError(ErrorCode.UPLOAD_FILE_NOT_SUPPORTED),
+                null
+            );
             return this.tempRefKey;
         }
 
-        Logger.log('file.type', file);
+        Logger.log("file.type", file);
 
         const [preSignErr, sign] = await this.preSignUploadUrl(file);
 
         if (preSignErr) {
-            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(preSignErr, null);
+            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(
+                preSignErr,
+                null
+            );
             return this.tempRefKey;
         }
 
         const uploadError = await this.upload(file, sign!.url);
 
         if (uploadError) {
-            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(uploadError, null);
+            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(
+                uploadError,
+                null
+            );
             return this.tempRefKey;
         }
 
-        const [linkErr, linkRes] = await this.linkFile(file.name, sign!.object_name);
+        const [linkErr, linkRes] = await this.linkFile(
+            file.name,
+            sign!.object_name
+        );
 
         if (linkErr) {
-            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(linkErr, null);
+            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(
+                linkErr,
+                null
+            );
             return this.tempRefKey;
         }
 
         const [parseErr] = await this.parseProcess(linkRes!.id);
 
-        Logger.log('parseErr', parseErr);
+        Logger.log("parseErr", parseErr);
 
-        if(parseErr) {
-            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(parseErr, null);
+        if (parseErr) {
+            this.refs[this.tempRefKey] = new FileRef<LinkFileResponse>(
+                parseErr,
+                null
+            );
             return this.tempRefKey;
         }
 

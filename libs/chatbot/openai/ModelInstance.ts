@@ -1,7 +1,7 @@
-import {OpenaiAuthSingleton} from "~libs/chatbot/openai/index";
-import {OpenAIAuth} from "~libs/open-ai/open-ai-auth";
-import {customChatFetch} from "~utils/custom-fetch-for-chat";
-import {Logger} from "~utils/logger";
+import { OpenaiAuthSingleton } from "~libs/chatbot/openai/index";
+import { OpenAIAuth } from "~libs/open-ai/open-ai-auth";
+import { customChatFetch } from "~utils/custom-fetch-for-chat";
+import { Logger } from "~utils/logger";
 
 interface OpenAiModel {
     slug: string;
@@ -58,7 +58,7 @@ export class OpenAiUserModelInfoSingleton {
     }
 
     async getModelInfo() {
-        if(this.modelInfo) {
+        if (this.modelInfo) {
             return this.modelInfo;
         }
 
@@ -67,39 +67,51 @@ export class OpenAiUserModelInfoSingleton {
 
     async refreshModelInfo(): Promise<OpenaiModelsAndCategories | null> {
         return new Promise((resolve) => {
-            OpenaiAuthSingleton.getInstance().auth.initSessionInfo().then(async ([initError]) => {
-                let token = "";
-                // const [initError] = await OpenaiAuthSingleton.getInstance().auth.initSessionInfo();
+            OpenaiAuthSingleton.getInstance()
+                .auth.initSessionInfo()
+                .then(async ([initError]) => {
+                    let token = "";
+                    // const [initError] = await OpenaiAuthSingleton.getInstance().auth.initSessionInfo();
 
-                if (!initError) {
-                    token = OpenaiAuthSingleton.getInstance().auth.authSessionInfo?.accessToken || "";
-                }
-
-                const myHeaders = new Headers();
-
-                if (token) {
-                    myHeaders.append("authorization", "Bearer " + token);
-                }
-
-                myHeaders.append("oai-device-id", await OpenAIAuth.getOpenAiDeviceId());
-                myHeaders.append("oai-language", "");
-
-                customChatFetch("https://chatgpt.com/backend-api/models?history_and_training_disabled=false", {
-                    method: "GET",
-                    headers: myHeaders,
-                    redirect: "follow"
-                }).then(async (request) => {
-                    if (!request.error) {
-                        try {
-                            resolve(await request.response?.json() as OpenaiModelsAndCategories);
-                            // this.modelInfo = await request.response?.json();
-                        } catch (e) {
-                            resolve(null);
-                            Logger.trace(e);
-                        }
+                    if (!initError) {
+                        token =
+                            OpenaiAuthSingleton.getInstance().auth
+                                .authSessionInfo?.accessToken || "";
                     }
+
+                    const myHeaders = new Headers();
+
+                    if (token) {
+                        myHeaders.append("authorization", "Bearer " + token);
+                    }
+
+                    myHeaders.append(
+                        "oai-device-id",
+                        await OpenAIAuth.getOpenAiDeviceId()
+                    );
+                    myHeaders.append("oai-language", "");
+
+                    customChatFetch(
+                        "https://chatgpt.com/backend-api/models?history_and_training_disabled=false",
+                        {
+                            method: "GET",
+                            headers: myHeaders,
+                            redirect: "follow"
+                        }
+                    ).then(async (request) => {
+                        if (!request.error) {
+                            try {
+                                resolve(
+                                    (await request.response?.json()) as OpenaiModelsAndCategories
+                                );
+                                // this.modelInfo = await request.response?.json();
+                            } catch (e) {
+                                resolve(null);
+                                Logger.trace(e);
+                            }
+                        }
+                    });
                 });
-            });
         });
     }
 }

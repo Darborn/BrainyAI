@@ -1,5 +1,8 @@
-import {PerplexityBot, PerplexitySession} from "~libs/chatbot/perplexity/PerplexityBase";
-import type {BotConstructorParams} from "~libs/chatbot/IBot";
+import type { BotConstructorParams } from "~libs/chatbot/IBot";
+import {
+    PerplexityBot,
+    PerplexitySession
+} from "~libs/chatbot/perplexity/PerplexityBase";
 
 class Llama370bInstructSessionSingleton {
     static model = "";
@@ -10,7 +13,10 @@ class Llama370bInstructSessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         Llama370bInstructSessionSingleton.model = model;
 
         if (Llama370bInstructSessionSingleton?.sessionInstance?.wsClosed) {
@@ -22,7 +28,8 @@ class Llama370bInstructSessionSingleton {
         }
 
         if (!Llama370bInstructSessionSingleton.sessionInstance) {
-            Llama370bInstructSessionSingleton.sessionInstance = new PerplexitySession(Llama370bInstructSessionSingleton.model);
+            Llama370bInstructSessionSingleton.sessionInstance =
+                new PerplexitySession(Llama370bInstructSessionSingleton.model);
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -39,12 +46,16 @@ class Llama370bInstructSessionSingleton {
 export class Llama370bInstruct extends PerplexityBot {
     model = "llama-3-70b-instruct";
     static botName = "llama-3-70b-instruct";
-    static desc = 'Suitable for advanced dialogue tasks, such as complex conversational AI, data analysis, and content creation.';
+    static desc =
+        "Suitable for advanced dialogue tasks, such as complex conversational AI, data analysis, and content creation.";
     static maxTokenLimit = 8 * 1000;
 
     constructor(params: BotConstructorParams) {
         super(params);
-        this.perplexitySession = Llama370bInstructSessionSingleton.getInstance(params, this.model);
+        this.perplexitySession = Llama370bInstructSessionSingleton.getInstance(
+            params,
+            this.model
+        );
     }
 
     getBotName(): string {

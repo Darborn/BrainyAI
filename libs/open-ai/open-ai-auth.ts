@@ -1,13 +1,14 @@
+import { Storage } from "@plasmohq/storage";
+
+import { OPEN_AI_REFERER_BASE } from "~libs/open-ai/open-ai-constant";
 import type {
-    IOpenAISessionResponse,
     IOpenaiAccountData,
+    IOpenAISessionResponse
 } from "~libs/open-ai/open-ai-interface";
-import {OPEN_AI_REFERER_BASE} from "~libs/open-ai/open-ai-constant";
-import {ChatError, ErrorCode} from "~utils/errors";
-import {customChatFetch} from "~utils/custom-fetch-for-chat";
-import {Storage} from "@plasmohq/storage";
-import {createUuid, STORAGE_OPEN_AI_DEVICE_ID} from "~utils";
-import {Logger} from "~utils/logger";
+import { createUuid, STORAGE_OPEN_AI_DEVICE_ID } from "~utils";
+import { customChatFetch } from "~utils/custom-fetch-for-chat";
+import { ChatError, ErrorCode } from "~utils/errors";
+import { Logger } from "~utils/logger";
 
 // a singleton only in background.js
 export class OpenAIAuth {
@@ -25,10 +26,12 @@ export class OpenAIAuth {
         return this.getSession();
     }
 
-    async initSessionInfo(): Promise<[ChatError | null, IOpenAISessionResponse | null]> {
+    async initSessionInfo(): Promise<
+        [ChatError | null, IOpenAISessionResponse | null]
+    > {
         if (!this.authSessionInfo) {
             const [error, session] = await this.createSession();
-            Logger.trace('initSessionInfo', error, session);
+            Logger.trace("initSessionInfo", error, session);
 
             if (error) {
                 return [error, this.authSessionInfo];
@@ -40,11 +43,12 @@ export class OpenAIAuth {
         return [null, this.authSessionInfo];
     }
 
-
-    async getSession(): Promise<[ChatError | null, IOpenAISessionResponse | null]> {
+    async getSession(): Promise<
+        [ChatError | null, IOpenAISessionResponse | null]
+    > {
         const [err] = await this.initSessionInfo();
 
-        if(err) {
+        if (err) {
             return [err, null];
         }
 
@@ -66,7 +70,12 @@ export class OpenAIAuth {
     }
 
     private async tryInitWss() {
-        if (this.accountInfo?.accounts['default'].features.includes('shared_websocket') && this.authSessionInfo?.accessToken) {
+        if (
+            this.accountInfo?.accounts["default"].features.includes(
+                "shared_websocket"
+            ) &&
+            this.authSessionInfo?.accessToken
+        ) {
             // const wss = new WebSocket(`wss://chatgpt.com/backend-api/ws/v4-2023-04-27?authorization=Bearer ${this.sessionInfo.accessToken}`)
             await this.registerWebsocket();
         }
@@ -78,18 +87,24 @@ export class OpenAIAuth {
         myHeaders.append("oai-language", "");
 
         if (this.authSessionInfo?.accessToken) {
-            myHeaders.append("authorization", `Bearer ${this.authSessionInfo.accessToken}`);
+            myHeaders.append(
+                "authorization",
+                `Bearer ${this.authSessionInfo.accessToken}`
+            );
         }
 
         try {
-            const request = await customChatFetch("https://chatgpt.com/backend-api/register-websocket", {
-                method: "POST",
-                headers: myHeaders,
-                redirect: "follow"
-            });
+            const request = await customChatFetch(
+                "https://chatgpt.com/backend-api/register-websocket",
+                {
+                    method: "POST",
+                    headers: myHeaders,
+                    redirect: "follow"
+                }
+            );
 
             // eslint-disable-next-line no-unsafe-optional-chaining
-            const {wss_url} = await request.response?.json();
+            const { wss_url } = await request.response?.json();
 
             if (wss_url) {
                 this.wss = new WebSocket(wss_url);
@@ -106,7 +121,6 @@ export class OpenAIAuth {
                     this.wss = null;
                 };
             }
-
         } catch (e) {
             // ignore
         }
@@ -133,7 +147,9 @@ export class OpenAIAuth {
         return newOpenAiDeviceId;
     }
 
-    private async checkAccount(): Promise<[ChatError | null, IOpenaiAccountData | null]> {
+    private async checkAccount(): Promise<
+        [ChatError | null, IOpenaiAccountData | null]
+    > {
         // shared_websocket
         const myHeaders = new Headers();
         myHeaders.append("accept", "*/*");
@@ -141,21 +157,28 @@ export class OpenAIAuth {
         myHeaders.append("oai-language", "");
 
         if (this.authSessionInfo?.accessToken) {
-            myHeaders.append("authorization", `Bearer ${this.authSessionInfo?.accessToken}`);
+            myHeaders.append(
+                "authorization",
+                `Bearer ${this.authSessionInfo?.accessToken}`
+            );
         }
 
-        const request = await customChatFetch(`https://chatgpt.com/backend-api/accounts/check/v4-2023-04-27`, {
-            method: "GET",
-            headers: myHeaders,
-            redirect: "follow"
-        });
+        const request = await customChatFetch(
+            `https://chatgpt.com/backend-api/accounts/check/v4-2023-04-27`,
+            {
+                method: "GET",
+                headers: myHeaders,
+                redirect: "follow"
+            }
+        );
 
         if (request.error) {
             return [request.error, null];
         }
 
         try {
-            const response = await request?.response?.json() as IOpenaiAccountData;
+            const response =
+                (await request?.response?.json()) as IOpenaiAccountData;
 
             return [null, response];
         } catch (e) {
@@ -163,18 +186,23 @@ export class OpenAIAuth {
         }
     }
 
-    private async createSession(): Promise<[ChatError | null, IOpenAISessionResponse | null]> {
+    private async createSession(): Promise<
+        [ChatError | null, IOpenAISessionResponse | null]
+    > {
         const myHeaders = new Headers();
         myHeaders.append("accept", "application/json");
         myHeaders.append("referer", OPEN_AI_REFERER_BASE);
         myHeaders.append("origin", "https://chatgpt.com");
         // myHeaders.append("sec-fetch-site", "same-origin");
 
-        const request = await customChatFetch(`https://chatgpt.com/api/auth/session`, {
-            method: "GET",
-            headers: myHeaders,
-            redirect: "follow"
-        });
+        const request = await customChatFetch(
+            `https://chatgpt.com/api/auth/session`,
+            {
+                method: "GET",
+                headers: myHeaders,
+                redirect: "follow"
+            }
+        );
 
         if (request.error) {
             return [request.error, null];
@@ -183,7 +211,7 @@ export class OpenAIAuth {
         try {
             const data = await request?.response?.text();
 
-            if(!data) {
+            if (!data) {
                 return [new ChatError(ErrorCode.UNKNOWN_ERROR), null];
             }
 

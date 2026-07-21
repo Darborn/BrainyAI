@@ -1,11 +1,16 @@
-import {RouterProvider} from "react-router-dom";
-import {router} from "~sidepanel/router";
-import React, {useContext} from "react";
-import type {PlasmoGetStyle} from "plasmo";
-import SidePanelProvider, {SidePanelContext} from "~provider/sidepanel/SidePanelProvider";
-import styleText from 'data-text:~style/panel-main.module.scss';
+import styleText from "data-text:~style/panel-main.module.scss";
+import type { PlasmoGetStyle } from "plasmo";
+import React, { useContext } from "react";
+import { RouterProvider } from "react-router-dom";
+
+import SidePanelProvider, {
+    SidePanelContext
+} from "~provider/sidepanel/SidePanelProvider";
+import { router } from "~sidepanel/router";
 import * as style from "~style/panel-main.module.scss";
-import '~base.scss';
+
+import "~base.scss";
+
 import CommonShortcutProvider from "~provider/CommonShortcutProvider";
 import GoogleAnalyticsProvider from "~provider/GoogleAnalyticsProvider";
 
@@ -15,8 +20,9 @@ export const getStyle: PlasmoGetStyle = () => {
     return style;
 };
 
-function TopWrapper({children}: { children: React.ReactNode }) {
-    const {windowHeight, setWindowHeight, expandMenu} = useContext(SidePanelContext);
+function TopWrapper({ children }: { children: React.ReactNode }) {
+    const { windowHeight, setWindowHeight, expandMenu } =
+        useContext(SidePanelContext);
 
     const afterContainerRendered = (ref: HTMLParagraphElement) => {
         if (ref) {
@@ -26,7 +32,7 @@ function TopWrapper({children}: { children: React.ReactNode }) {
                 setWindowHeight(ref.clientHeight - offset);
             }, 20);
 
-            window.addEventListener('resize', function () {
+            window.addEventListener("resize", function () {
                 setWindowHeight(ref.clientHeight - offset);
             });
         }
@@ -52,34 +58,41 @@ function TopWrapper({children}: { children: React.ReactNode }) {
     //     },
     // ];
 
-    return <div ref={afterContainerRendered} className={style.topWrapper} style={{width: `${expandMenu ? 'calc(100% - 64px)': '100%'}`}}>
-        {/*<div className={style.menu}>*/}
-        {/*    <Dropdown menu={{items}}>*/}
-        {/*        <a onClick={(e) => e.preventDefault()}>*/}
-        {/*            <Space>*/}
-        {/*                <MenuOutlined className={style.icon} width={30} height={30}/>*/}
-        {/*            </Space>*/}
-        {/*        </a>*/}
-        {/*    </Dropdown>*/}
-        {/*</div>*/}
+    return (
+        <div
+            ref={afterContainerRendered}
+            className={style.topWrapper}
+            style={{ width: `${expandMenu ? "calc(100% - 64px)" : "100%"}` }}>
+            {/*<div className={style.menu}>*/}
+            {/*    <Dropdown menu={{items}}>*/}
+            {/*        <a onClick={(e) => e.preventDefault()}>*/}
+            {/*            <Space>*/}
+            {/*                <MenuOutlined className={style.icon} width={30} height={30}/>*/}
+            {/*            </Space>*/}
+            {/*        </a>*/}
+            {/*    </Dropdown>*/}
+            {/*</div>*/}
 
-        <div className={style.theContainer}>
-            <div className={style.searchContentWrap}>
-                {windowHeight > 0 ? children : null}
+            <div className={style.theContainer}>
+                <div className={style.searchContentWrap}>
+                    {windowHeight > 0 ? children : null}
+                </div>
+                {/*<div className={style.drawer} style={{height: `${windowHeight}px`}}>hello</div>*/}
             </div>
-            {/*<div className={style.drawer} style={{height: `${windowHeight}px`}}>hello</div>*/}
         </div>
-    </div>;
+    );
 }
 
 export default function Main() {
-    return <GoogleAnalyticsProvider>
-        <CommonShortcutProvider>
-            <SidePanelProvider>
-                <TopWrapper>
-                    <RouterProvider router={router}/>
-                </TopWrapper>
-            </SidePanelProvider>
-        </CommonShortcutProvider>
-    </GoogleAnalyticsProvider>;
+    return (
+        <GoogleAnalyticsProvider>
+            <CommonShortcutProvider>
+                <SidePanelProvider>
+                    <TopWrapper>
+                        <RouterProvider router={router} />
+                    </TopWrapper>
+                </SidePanelProvider>
+            </CommonShortcutProvider>
+        </GoogleAnalyticsProvider>
+    );
 }

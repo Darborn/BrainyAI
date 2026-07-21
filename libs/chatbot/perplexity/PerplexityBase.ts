@@ -1,14 +1,30 @@
+import IconPerplexity from "data-base64:~assets/perplexity.png";
+import WebSocketAsPromised from "websocket-as-promised";
+
+import { sendToBackground } from "@plasmohq/messaging";
+import { Storage } from "@plasmohq/storage";
+
+import XFramePerplexityChat from "~component/xframe/perplexity-chat";
+import { BotBase } from "~libs/chatbot/BotBase";
+import type { IBotSessionSingleton } from "~libs/chatbot/BotSessionBase";
 import {
     type BotCompletionParams,
     type BotConstructorParams,
     type ConversationResponseCb,
     type IBot
 } from "~libs/chatbot/IBot";
-import {BotBase} from "~libs/chatbot/BotBase";
-import {customChatFetch} from "~utils/custom-fetch-for-chat";
-import {ChatError, ErrorCode} from "~utils/errors";
-import WebSocketAsPromised from "websocket-as-promised";
-import {ConversationResponse, ResponseMessageType} from "~libs/open-ai/open-ai-interface";
+import {
+    PerplexityFileSingleton,
+    PerplexitySupportedMimeTypes
+} from "~libs/chatbot/perplexity/fileInstance";
+import {
+    checkModelSupportUploadImage,
+    checkModelSupportUploadPDF
+} from "~libs/chatbot/utils";
+import {
+    ConversationResponse,
+    ResponseMessageType
+} from "~libs/open-ai/open-ai-interface";
 import {
     appendParamToUrl,
     createUuid,
@@ -20,14 +36,9 @@ import {
     R_SCP_PARAM,
     WINDOW_FOR_REMOVE_STORAGE_KEY
 } from "~utils";
-import {sendToBackground} from "@plasmohq/messaging";
-import {Storage} from "@plasmohq/storage";
-import IconPerplexity from "data-base64:~assets/perplexity.png";
-import type {IBotSessionSingleton} from "~libs/chatbot/BotSessionBase";
-import {Logger} from "~utils/logger";
-import XFramePerplexityChat from "~component/xframe/perplexity-chat";
-import {PerplexityFileSingleton, PerplexitySupportedMimeTypes} from "~libs/chatbot/perplexity/fileInstance";
-import {checkModelSupportUploadImage, checkModelSupportUploadPDF} from "~libs/chatbot/utils";
+import { customChatFetch } from "~utils/custom-fetch-for-chat";
+import { ChatError, ErrorCode } from "~utils/errors";
+import { Logger } from "~utils/logger";
 
 class Message {
     content: string;
@@ -55,7 +66,6 @@ export class PerplexitySession {
     private prompt: string;
     private sid: string;
     private messages: Message[] = [];
-
 
     static destroy() {
         // if(PerplexitySession?.ws?.isOpened) {
@@ -87,12 +97,12 @@ export class PerplexitySession {
 
     private V =
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_".split(
-            "",
+            ""
         );
 
     private Z(e: number): string {
         let t = "";
-        do (t = this.V[e % 64] + t), (e = Math.floor(e / 64));
+        do ((t = this.V[e % 64] + t), (e = Math.floor(e / 64)));
         while (e > 0);
         return t;
     }
@@ -103,7 +113,7 @@ export class PerplexitySession {
 
     async checkAvailability(): Promise<[ChatError | null]> {
         const request = await customChatFetch(
-            "https://www.perplexity.ai/api/auth/session",
+            "https://www.perplexity.ai/api/auth/session"
         );
 
         if (request.error) {
@@ -122,7 +132,11 @@ export class PerplexitySession {
         }
     }
 
-    async completion(prompt: string, rid: string, cb: ConversationResponseCb): Promise<void> {
+    async completion(
+        prompt: string,
+        rid: string,
+        cb: ConversationResponseCb
+    ): Promise<void> {
         this.prompt = prompt;
         this.rid = rid;
         this.msgCallback = cb;
@@ -159,11 +173,14 @@ export class PerplexitySession {
     private async someRequest() {
         const myHeaders = new Headers();
 
-        await customChatFetch(`https://www.perplexity.ai/socket.io/?EIO=4&transport=polling&t=${this.t}&sid=${this.sid}`, {
-            method: "GET",
-            headers: myHeaders,
-            redirect: "follow"
-        });
+        await customChatFetch(
+            `https://www.perplexity.ai/socket.io/?EIO=4&transport=polling&t=${this.t}&sid=${this.sid}`,
+            {
+                method: "GET",
+                headers: myHeaders,
+                redirect: "follow"
+            }
+        );
     }
 
     private separateNumberAndObject(input: string) {
@@ -173,30 +190,36 @@ export class PerplexitySession {
             const number = parseInt(match[1]);
             try {
                 const object = JSON.parse(match[2]);
-                return {number, object};
+                return { number, object };
             } catch (error) {
-                return {number, object: match[2]};
+                return { number, object: match[2] };
             }
         } else {
-            return {object: input};
+            return { object: input };
         }
     }
 
     private async startSession() {
         const myHeaders = new Headers();
 
-        const request = await customChatFetch(`https://www.perplexity.ai/socket.io/?transport=polling&EIO=4&t=${this.t}`, {
-            method: "GET",
-            headers: myHeaders,
-            redirect: "follow"
-        });
+        const request = await customChatFetch(
+            `https://www.perplexity.ai/socket.io/?transport=polling&EIO=4&t=${this.t}`,
+            {
+                method: "GET",
+                headers: myHeaders,
+                redirect: "follow"
+            }
+        );
 
         if (request.error) {
-            this.msgCallback(this.rid, new ConversationResponse({
-                conversation_id: this.sid,
-                message_type: ResponseMessageType.ERROR,
-                error: request.error
-            }));
+            this.msgCallback(
+                this.rid,
+                new ConversationResponse({
+                    conversation_id: this.sid,
+                    message_type: ResponseMessageType.ERROR,
+                    error: request.error
+                })
+            );
 
             return;
         }
@@ -204,11 +227,14 @@ export class PerplexitySession {
         const response = await request?.response?.text();
 
         if (!response) {
-            this.msgCallback(this.rid, new ConversationResponse({
-                conversation_id: this.sid,
-                message_type: ResponseMessageType.ERROR,
-                error: new ChatError(ErrorCode.UNKNOWN_ERROR)
-            }));
+            this.msgCallback(
+                this.rid,
+                new ConversationResponse({
+                    conversation_id: this.sid,
+                    message_type: ResponseMessageType.ERROR,
+                    error: new ChatError(ErrorCode.UNKNOWN_ERROR)
+                })
+            );
 
             return;
         }
@@ -219,17 +245,20 @@ export class PerplexitySession {
         const checkSidRequest = await customChatFetch(
             `https://www.perplexity.ai/socket.io/?EIO=4&transport=polling&sid=${this.sid}&t=${this.t}`,
             {
-                body: `40${JSON.stringify({jwt: "anonymous-ask-user"})}`,
+                body: `40${JSON.stringify({ jwt: "anonymous-ask-user" })}`,
                 method: "POST"
-            },
+            }
         );
 
         if (checkSidRequest.error) {
-            this.msgCallback(this.rid, new ConversationResponse({
-                conversation_id: this.sid,
-                message_type: ResponseMessageType.ERROR,
-                error: checkSidRequest.error
-            }));
+            this.msgCallback(
+                this.rid,
+                new ConversationResponse({
+                    conversation_id: this.sid,
+                    message_type: ResponseMessageType.ERROR,
+                    error: checkSidRequest.error
+                })
+            );
 
             return;
         }
@@ -250,10 +279,10 @@ export class PerplexitySession {
         const ask = [
             "perplexity_labs",
             {
-                "version": "2.9",
-                "source": "default",
-                "model": this.model,
-                "messages": this.messages,
+                version: "2.9",
+                source: "default",
+                model: this.model,
+                messages: this.messages
                 // timezone: "Asia/Shanghai"
             }
         ];
@@ -271,8 +300,8 @@ export class PerplexitySession {
                 },
                 unpackMessage: (data) => {
                     return this.separateNumberAndObject(data as string);
-                },
-            },
+                }
+            }
         );
 
         wsp.onOpen.addListener(() => {
@@ -295,111 +324,140 @@ export class PerplexitySession {
             try {
                 // Logger.log("data number", data.number, data)
                 switch (Number(data.number)) {
-                case 2:
-                    wsp.send("3");
-                    break;
-                case 3:
-                    if (data.object === "probe") {
-                        wsp.send("5");
-                        this.sendMessage();
-                    }
-                    break;
-                case 42:
-                    if (data?.object?.length >= 2) {
-                        const result = data.object[1];
-                        try {
-                            const response = result.output;
-                            if (response) {
-                                this.msgCallback(this.rid, new ConversationResponse(
-                                    {
-                                        conversation_id: this.sid,
-                                        message_text: response,
-                                        message_type: ResponseMessageType.GENERATING,
-                                    }
-                                ));
-                            }
-                        } catch (error) {
-                            this.msgCallback(this.rid, new ConversationResponse(
-                                {
-                                    conversation_id: this.sid,
-                                    message_type: ResponseMessageType.ERROR,
-                                    message_id: createUuid(),
-                                    error: new ChatError(ErrorCode.UNKNOWN_ERROR)
-                                }
-                            ));
+                    case 2:
+                        wsp.send("3");
+                        break;
+                    case 3:
+                        if (data.object === "probe") {
+                            wsp.send("5");
+                            this.sendMessage();
                         }
-                    }
-                    break;
-                default:
-                    if (String(data.number).toString().startsWith("43")) {
-                        if (data?.object?.length >= 1) {
-                            const result = data.object[0];
-
+                        break;
+                    case 42:
+                        if (data?.object?.length >= 2) {
+                            const result = data.object[1];
                             try {
-                                if (result.status === "failed") {
-                                    Logger.log('=====================', result.text);
-                                    this.msgCallback(this.rid, new ConversationResponse({
+                                const response = result.output;
+                                if (response) {
+                                    this.msgCallback(
+                                        this.rid,
+                                        new ConversationResponse({
+                                            conversation_id: this.sid,
+                                            message_text: response,
+                                            message_type:
+                                                ResponseMessageType.GENERATING
+                                        })
+                                    );
+                                }
+                            } catch (error) {
+                                this.msgCallback(
+                                    this.rid,
+                                    new ConversationResponse({
                                         conversation_id: this.sid,
                                         message_type: ResponseMessageType.ERROR,
                                         message_id: createUuid(),
-                                        error: new ChatError(ErrorCode.MODEL_INTERNAL_ERROR, result.text)
-                                    }));
-
-                                    return;
-                                }
-
-                                this.addMessage(new Message(result.output, "assistant", 0));
-
-                                const text = result.output;
-                                if (text) {
-                                    this.msgCallback(this.rid, new ConversationResponse(
-                                        {
-                                            conversation_id: this.sid,
-                                            message_text: text,
-                                            message_id: createUuid(),
-                                            message_type: ResponseMessageType.DONE,
-                                        }
-                                    ));
-                                }
-                            } catch (error) {
-                                this.msgCallback(this.rid, new ConversationResponse(
-                                    {
-                                        conversation_id: this.sid,
-                                        message_type: ResponseMessageType.ERROR,
-                                        error: new ChatError(ErrorCode.UNKNOWN_ERROR)
-                                    }
-                                ));
+                                        error: new ChatError(
+                                            ErrorCode.UNKNOWN_ERROR
+                                        )
+                                    })
+                                );
                             }
                         }
-                    }
-                    break;
+                        break;
+                    default:
+                        if (String(data.number).toString().startsWith("43")) {
+                            if (data?.object?.length >= 1) {
+                                const result = data.object[0];
+
+                                try {
+                                    if (result.status === "failed") {
+                                        Logger.log(
+                                            "=====================",
+                                            result.text
+                                        );
+                                        this.msgCallback(
+                                            this.rid,
+                                            new ConversationResponse({
+                                                conversation_id: this.sid,
+                                                message_type:
+                                                    ResponseMessageType.ERROR,
+                                                message_id: createUuid(),
+                                                error: new ChatError(
+                                                    ErrorCode.MODEL_INTERNAL_ERROR,
+                                                    result.text
+                                                )
+                                            })
+                                        );
+
+                                        return;
+                                    }
+
+                                    this.addMessage(
+                                        new Message(
+                                            result.output,
+                                            "assistant",
+                                            0
+                                        )
+                                    );
+
+                                    const text = result.output;
+                                    if (text) {
+                                        this.msgCallback(
+                                            this.rid,
+                                            new ConversationResponse({
+                                                conversation_id: this.sid,
+                                                message_text: text,
+                                                message_id: createUuid(),
+                                                message_type:
+                                                    ResponseMessageType.DONE
+                                            })
+                                        );
+                                    }
+                                } catch (error) {
+                                    this.msgCallback(
+                                        this.rid,
+                                        new ConversationResponse({
+                                            conversation_id: this.sid,
+                                            message_type:
+                                                ResponseMessageType.ERROR,
+                                            error: new ChatError(
+                                                ErrorCode.UNKNOWN_ERROR
+                                            )
+                                        })
+                                    );
+                                }
+                            }
+                        }
+                        break;
                 }
             } catch (error) {
-                this.msgCallback(this.rid, new ConversationResponse(
-                    {
+                this.msgCallback(
+                    this.rid,
+                    new ConversationResponse({
                         conversation_id: this.sid,
                         message_type: ResponseMessageType.ERROR,
                         error: new ChatError(ErrorCode.UNKNOWN_ERROR)
-                    }
-                ));
+                    })
+                );
             }
         });
 
         wsp.onError.addListener(() => {
             wsp.removeAllListeners();
             void wsp.close();
-            this.msgCallback(this.rid, new ConversationResponse(
-                {
+            this.msgCallback(
+                this.rid,
+                new ConversationResponse({
                     conversation_id: this.sid,
                     message_type: ResponseMessageType.ERROR,
                     error: new ChatError(ErrorCode.COPILOT_WEBSOCKET_ERROR)
-                }
-            ));
+                })
+            );
             // reject(event);
         });
 
         wsp.onClose.addListener(() => {
-            Logger.log('onclose======');
+            Logger.log("onclose======");
             // resolve();
             // onUpdateResponse(callbackParam, { done: true });
         });
@@ -419,7 +477,10 @@ export class PerplexitySessionSingleton {
         // ignore
     }
 
-    static getInstance(params: BotConstructorParams, model: string): PerplexitySession {
+    static getInstance(
+        params: BotConstructorParams,
+        model: string
+    ): PerplexitySession {
         PerplexitySessionSingleton.model = model;
 
         if (PerplexitySessionSingleton?.sessionInstance?.wsClosed) {
@@ -431,7 +492,9 @@ export class PerplexitySessionSingleton {
         }
 
         if (!PerplexitySessionSingleton.sessionInstance) {
-            PerplexitySessionSingleton.sessionInstance = new PerplexitySession(PerplexitySessionSingleton.model);
+            PerplexitySessionSingleton.sessionInstance = new PerplexitySession(
+                PerplexitySessionSingleton.model
+            );
         }
 
         this.globalConversationId = params.globalConversationId;
@@ -447,11 +510,11 @@ export class PerplexitySessionSingleton {
 
 export abstract class PerplexityBot extends BotBase implements IBot {
     static logoSrc = IconPerplexity;
-    static botName = 'Perplexity';
-    static loginUrl = 'https://perplexity.ai/';
-    static AUTH_WINDOW_KEY = 'perplexity_auth_window';
-    static CAPTCHA_WINDOW_KEY = 'perplexity_captcha_window';
-    static isLogin : boolean | null = null;
+    static botName = "Perplexity";
+    static loginUrl = "https://perplexity.ai/";
+    static AUTH_WINDOW_KEY = "perplexity_auth_window";
+    static CAPTCHA_WINDOW_KEY = "perplexity_captcha_window";
+    static isLogin: boolean | null = null;
     static maxTokenLimit = 0;
     static paidModel = false;
     static requireLogin = false;
@@ -472,7 +535,13 @@ export abstract class PerplexityBot extends BotBase implements IBot {
         this.fileInstance = PerplexityFileSingleton.getInstance();
     }
 
-    async completion({prompt, rid, cb, fileRef, file}: BotCompletionParams): Promise<void> {
+    async completion({
+        prompt,
+        rid,
+        cb,
+        fileRef,
+        file
+    }: BotCompletionParams): Promise<void> {
         // const [checkErr, isLogin] = await PerplexityBot.checkIsLogin();
 
         // if(checkErr || !isLogin) {
@@ -482,33 +551,35 @@ export abstract class PerplexityBot extends BotBase implements IBot {
         //     }));
         // }
 
-        if(fileRef || file) {
-            return cb(rid, new ConversationResponse({
-                error: new ChatError(ErrorCode.UPLOAD_FILE_NOT_SUPPORTED),
-                message_type: ResponseMessageType.ERROR
-            }));
+        if (fileRef || file) {
+            return cb(
+                rid,
+                new ConversationResponse({
+                    error: new ChatError(ErrorCode.UPLOAD_FILE_NOT_SUPPORTED),
+                    message_type: ResponseMessageType.ERROR
+                })
+            );
         }
 
         void this.perplexitySession.completion(prompt, rid, cb);
     }
 
-
     static async checkIsLogin(): Promise<[ChatError | null, boolean]> {
         const request = await customChatFetch(
-            "https://www.perplexity.ai/api/auth/session",
+            "https://www.perplexity.ai/api/auth/session"
         );
 
         if (request.error) {
             return [request.error, false];
         }
 
-        this.isLogin = await request.response?.text() !== "{}";
+        this.isLogin = (await request.response?.text()) !== "{}";
 
         return [null, true];
     }
 
     static async checkModelCanUse(): Promise<boolean> {
-        if(this.isLogin == null) {
+        if (this.isLogin == null) {
             const [, isLogin] = await this.checkIsLogin();
             return isLogin;
         }
@@ -517,13 +588,22 @@ export abstract class PerplexityBot extends BotBase implements IBot {
     }
 
     async startAuth(): Promise<boolean> {
-        const randomKey = '__window_key_' + Math.random() * 1000;
+        const randomKey = "__window_key_" + Math.random() * 1000;
         const perplexityAuthValue = createUuid();
 
-        const url = appendParamToUrl(appendParamToUrl(
-            appendParamToUrl(PerplexityBot.loginUrl, IS_OPEN_IN_CHAT_AUTH_WINDOW, '1'),
-            WINDOW_FOR_REMOVE_STORAGE_KEY, randomKey
-        ), PerplexityBot.AUTH_WINDOW_KEY, perplexityAuthValue);
+        const url = appendParamToUrl(
+            appendParamToUrl(
+                appendParamToUrl(
+                    PerplexityBot.loginUrl,
+                    IS_OPEN_IN_CHAT_AUTH_WINDOW,
+                    "1"
+                ),
+                WINDOW_FOR_REMOVE_STORAGE_KEY,
+                randomKey
+            ),
+            PerplexityBot.AUTH_WINDOW_KEY,
+            perplexityAuthValue
+        );
 
         const res = await sendToBackground({
             name: "open-new-window",
@@ -534,7 +614,7 @@ export abstract class PerplexityBot extends BotBase implements IBot {
                 focused: true,
                 screenWidth: window.screen.width,
                 screenHeight: window.screen.height
-            },
+            }
         });
 
         const storage = new Storage();
@@ -542,7 +622,9 @@ export abstract class PerplexityBot extends BotBase implements IBot {
 
         return new Promise((resolve) => {
             const listener = function (message: any) {
-                if (message.action === MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS) {
+                if (
+                    message.action === MESSAGE_ACTION_CHAT_PROVIDER_AUTH_SUCCESS
+                ) {
                     if (message.authKey === perplexityAuthValue) {
                         chrome.runtime.onMessage.removeListener(listener);
                         resolve(true);
@@ -554,17 +636,30 @@ export abstract class PerplexityBot extends BotBase implements IBot {
     }
 
     async startCaptcha(): Promise<boolean> {
-        const randomKey = '__window_key_' + Math.random() * 1000;
+        const randomKey = "__window_key_" + Math.random() * 1000;
         const perplexityCaptchaValue = createUuid();
 
-        const url =
+        const url = appendParamToUrl(
             appendParamToUrl(
                 appendParamToUrl(
                     appendParamToUrl(
                         appendParamToUrl(
-                            appendParamToUrl(PerplexityBot.loginUrl, IS_OPEN_IN_CHAT_CAPTCHA_WINDOW, '1'),
-                            WINDOW_FOR_REMOVE_STORAGE_KEY, randomKey
-                        ), PerplexityBot.CAPTCHA_WINDOW_KEY, perplexityCaptchaValue), R_SCP_PARAM, "1"), IS_OPEN_IN_PLUGIN, "1");
+                            PerplexityBot.loginUrl,
+                            IS_OPEN_IN_CHAT_CAPTCHA_WINDOW,
+                            "1"
+                        ),
+                        WINDOW_FOR_REMOVE_STORAGE_KEY,
+                        randomKey
+                    ),
+                    PerplexityBot.CAPTCHA_WINDOW_KEY,
+                    perplexityCaptchaValue
+                ),
+                R_SCP_PARAM,
+                "1"
+            ),
+            IS_OPEN_IN_PLUGIN,
+            "1"
+        );
 
         // const res = await sendToBackground({
         //     name: "open-new-window",
@@ -587,14 +682,20 @@ export abstract class PerplexityBot extends BotBase implements IBot {
         const frame = new XFramePerplexityChat(url);
         frame.render();
 
-
         // const storage = new Storage();
         // await storage.set(randomKey, res);
 
         return new Promise((resolve) => {
             const listener = function (message: any) {
-                if (message.action === MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS) {
-                    Logger.log("message.authKey", message.authKey, perplexityCaptchaValue);
+                if (
+                    message.action ===
+                    MESSAGE_ACTION_CHAT_PROVIDER_CAPTCHA_SUCCESS
+                ) {
+                    Logger.log(
+                        "message.authKey",
+                        message.authKey,
+                        perplexityCaptchaValue
+                    );
                     if (message.authKey === perplexityCaptchaValue) {
                         chrome.runtime.onMessage.removeListener(listener);
                         frame.destroy();
