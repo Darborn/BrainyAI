@@ -81,7 +81,6 @@ import NewTag from "data-base64:~assets/new_tag.svg";
 import QuotaIcon from "data-base64:~assets/quota.png";
 import RefreshIcon from "data-base64:~assets/refresh.png";
 import TextQuota from "data-base64:~assets/text_quota.png";
-import lottie from "lottie-web";
 import markdownit from "markdown-it";
 
 import { useStorage } from "@plasmohq/storage/dist/hook";
@@ -567,26 +566,7 @@ const AIError = memo(function ({
 });
 
 const CatAnimation = () => {
-    const catRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const animationRef = lottie.loadAnimation({
-            container: catRef!.current!, // the dom element that will contain the animation
-            renderer: "svg",
-            loop: true,
-            autoplay: true,
-            path: chrome.runtime.getURL("/resources/loading.json") // the path to the animation json
-        });
-        return () => {
-            animationRef.destroy();
-        };
-    }, []);
-
-    return (
-        <div className="flex justify-center w-[100%]">
-            <div className="w-20 h-20" ref={catRef}></div>
-        </div>
-    );
+    return <div className="flex justify-center w-[100%]"></div>;
 };
 
 const Thinking = () => {

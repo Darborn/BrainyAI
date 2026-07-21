@@ -9,7 +9,6 @@ import GuideText0 from "data-base64:~assets/greeting/guide_text_0.png";
 import GuideText1 from "data-base64:~assets/greeting/guide_text_1.png";
 import GuideText2 from "data-base64:~assets/greeting/guide_text_2.png";
 import GuideText from "data-base64:~assets/greeting/guide_text.png";
-import lottie from "lottie-web";
 import { useEffect, useRef, useState } from "react";
 
 import { justOpenPanel } from "~libs/open-panel";
@@ -41,24 +40,7 @@ const guideList = [
 ];
 
 const ClickAnimation = () => {
-    const handRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const animationRef = lottie.loadAnimation({
-            container: handRef!.current!, // the dom element that will contain the animation
-            renderer: "svg",
-            loop: true,
-            autoplay: true,
-            path: chrome.runtime.getURL("/resources/guide_click.json") // the path to the animation json
-        });
-        lottie.setSpeed(4);
-
-        return () => {
-            animationRef.destroy();
-        };
-    }, []);
-
-    return <div ref={handRef} className="w-[80px] h-[80px]"></div>;
+    return <div className="w-[80px] h-[80px]"></div>;
 };
 
 export default function Greeting() {

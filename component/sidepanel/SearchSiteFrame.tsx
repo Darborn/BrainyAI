@@ -24,17 +24,7 @@ const SearchSiteFrame = function ({ site }: { site: ISearchSiteItem }) {
     const formatMetaSoUrl = async function () {
         if (!searchText) return site.mainSite;
 
-        const resp = await sendToBackground({
-            name: "metaso-session",
-            body: {
-                searchText
-            }
-        });
-
-        if (resp) {
-            return site.searchPage.replace("{session_id}", resp.data.id);
-        }
-
+        // metaso-session removed in API refactor — return main site
         return site.mainSite;
     };
 

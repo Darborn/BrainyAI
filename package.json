@@ -88,16 +88,7 @@
             "tabs",
             "browsingData",
             "storage"
-        ],
-        "declarative_net_request": {
-            "rule_resources": [
-                {
-                    "id": "user_agent_modifier",
-                    "enabled": true,
-                    "path": "~rulesets/rule.json"
-                }
-            ]
-        }
+        ]
     },
     "lint-staged": {
         "*.{ts,tsx}": [
