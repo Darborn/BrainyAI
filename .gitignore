@@ -26,8 +26,14 @@ out/
 build/
 dist/
 
-# plasmo
-.plasmo
+# plasmo — keep type declarations for CI type-check
+.plasmo/cache/
+.plasmo/gen-assets/
+.plasmo/static/
+.plasmo/tabs/
+.plasmo/*.manifest.json
+.plasmo/*.html
+.plasmo/process.env*
 
 # typescript
 .tsbuildinfo
