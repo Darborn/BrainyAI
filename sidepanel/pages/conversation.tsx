@@ -387,21 +387,44 @@ const AIError = memo(function ({
                 );
                 break;
             case ErrorCode.UNAUTHORIZED:
-                errMessage = (
-                    <div className="w-fit">
-                        <div className="text-base font-bold mb-2">
-                            Login Required
+                if (!model.requireLogin) {
+                    // API mode — direct to settings
+                    errMessage = (
+                        <div className="w-fit">
+                            <div className="text-base font-bold mb-2">
+                                API Key Required
+                            </div>
+                            <div>
+                                Please configure your {name} API Key in the
+                                extension settings.
+                            </div>
+                            <BlueBtn
+                                text="Open Settings"
+                                handleClick={() => {
+                                    chrome.runtime.openOptionsPage();
+                                }}
+                            />
                         </div>
-                        <div>
-                            Please log in to your{" "}
-                            <u className={"text-[#0A4DFE]"} onClick={openLogin}>
-                                {name}
-                            </u>{" "}
-                            account to continue.
+                    );
+                } else {
+                    errMessage = (
+                        <div className="w-fit">
+                            <div className="text-base font-bold mb-2">
+                                Login Required
+                            </div>
+                            <div>
+                                Please log in to your{" "}
+                                <u
+                                    className={"text-[#0A4DFE]"}
+                                    onClick={openLogin}>
+                                    {name}
+                                </u>{" "}
+                                account to continue.
+                            </div>
+                            <BlueBtn text="Log in" handleClick={openLogin} />
                         </div>
-                        <BlueBtn text="Log in" handleClick={openLogin} />
-                    </div>
-                );
+                    );
+                }
                 break;
             case ErrorCode.CAPTCHA:
                 errMessage = (
